@@ -12,6 +12,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -23,7 +26,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with: { distribution: temurin, java-version: 21 }
 
       # The ubuntu-latest runner already ships the Android SDK at $ANDROID_HOME.
@@ -70,3 +73,15 @@ jobs:
         with:
           name: smart-gpa-apk
           path: SmartGPA.apk
+
+      # Permanent download link for students:
+      # https://github.com/eng-mayas/smart-gpa/releases/latest/download/SmartGPA.apk
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Smart GPA v1.0.${{ github.run_number }}
+          body: |
+            تطبيق Smart GPA لأندرويد — من Atmata Group.
+            التثبيت: نزّل SmartGPA.apk وافتحه على الهاتف، ثم اسمح بالتثبيت من مصادر غير معروفة عند الطلب.
+          files: SmartGPA.apk

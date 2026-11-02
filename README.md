@@ -108,7 +108,7 @@ npx cap open ios         # ثم Product › Archive للنشر على App Store
 1. ارفع المشروع إلى مستودع GitHub (الفرع `main`).
 2. يعمل `.github/workflows/android-apk.yml` تلقائياً ويُنتج `SmartGPA.apk` في تبويب **Actions → آخر تشغيل → Artifacts**.
 3. (اختياري لكنه مهم للتحديثات) أنشئ مفتاح توقيع مرة واحدة بـ `scripts/make-keystore.sh` وأضف الأسرار `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` في Settings → Secrets. بدونها يُبنى APK بتوقيع debug يعمل أيضاً.
-4. وزّع ملف الـ APK عبر رابط/تلغرام/واتساب/موقع الجامعة. على هاتف الطالب: فتح الملف → السماح بـ «التثبيت من مصادر غير معروفة» لمرة واحدة.
+4. كل بناء يُنشر أيضاً كإصدار (Release) برابط ثابت: `https://github.com/eng-mayas/smart-gpa/releases/latest/download/SmartGPA.apk` — وزّعه عبر رابط/تلغرام/واتساب/موقع الجامعة. على هاتف الطالب: فتح الملف → السماح بـ «التثبيت من مصادر غير معروفة» لمرة واحدة.
 
 **بناء محلي:** `scripts/build-apk-local.sh` (يتطلب Android SDK + JDK 17).
 
