@@ -1,0 +1,16 @@
+{
+  "version": 1, "theme": "light", "lang": "ar", "scaleId": "sy-private-4.0", "policyId": "sy-private-draft",
+  "profile": { "name": "طالب في خطر", "university": "جامعة خاصة سورية", "faculty": "الهندسة", "major": "هندسة مدنية", "academicSystem": "الساعات المعتمدة (4.00)", "academicYear": "2025-2026", "planCredits": 170, "previousCgpa": 1.42, "previousGpaHours": 45, "completedCredits": 39, "previousWarnings": 2, "remainingCourses": 38 },
+  "courses": [
+    { "id": "a1", "name": "تحليل إنشائي", "credits": 4, "grade": { "kind": "mark", "value": 61 }, "status": "normal" },
+    { "id": "a2", "name": "ميكانيك تربة", "credits": 3, "grade": { "kind": "mark", "value": 55 }, "status": "normal" },
+    { "id": "a3", "name": "رياضيات 3", "credits": 3, "grade": { "kind": "letter", "value": "F" }, "status": "repeat", "previousPoints": 0 },
+    { "id": "a4", "name": "رسم هندسي", "credits": 2, "grade": { "kind": "mark", "value": 78 }, "status": "normal" }
+  ],
+  "history": [
+    { "label": "2023-2024 / ف1", "gpa": 1.3, "gpaHours": 15 },
+    { "label": "2023-2024 / ف2", "gpa": 1.5, "gpaHours": 15 },
+    { "label": "2024-2025 / ف1", "gpa": 1.46, "gpaHours": 15 }
+  ],
+  "savedScenarios": []
+}

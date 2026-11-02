@@ -1,0 +1,15 @@
+{
+  "version": 1, "theme": "light", "lang": "ar", "scaleId": "sy-private-4.0", "policyId": "sy-private-draft",
+  "profile": { "name": "طالبة متفوقة", "university": "جامعة خاصة سورية", "faculty": "الصيدلة", "major": "صيدلة", "academicSystem": "الساعات المعتمدة (4.00)", "academicYear": "2025-2026", "planCredits": 180, "previousCgpa": 3.41, "previousGpaHours": 90, "completedCredits": 90, "previousWarnings": 0, "remainingCourses": 24 },
+  "courses": [
+    { "id": "b1", "name": "كيمياء صيدلية", "credits": 4, "grade": { "kind": "mark", "value": 92 }, "status": "normal" },
+    { "id": "b2", "name": "علم الأدوية", "credits": 3, "grade": { "kind": "mark", "value": 87 }, "status": "normal" },
+    { "id": "b3", "name": "تدريب ميداني", "credits": 2, "grade": { "kind": "mark", "value": 95 }, "status": "passfail" },
+    { "id": "b4", "name": "إحصاء حيوي", "credits": 3, "grade": { "kind": "none" }, "status": "normal" }
+  ],
+  "history": [
+    { "label": "ف1", "gpa": 3.2, "gpaHours": 15 }, { "label": "ف2", "gpa": 3.5, "gpaHours": 15 }, { "label": "ف3", "gpa": 3.3, "gpaHours": 15 },
+    { "label": "ف4", "gpa": 3.6, "gpaHours": 15 }, { "label": "ف5", "gpa": 3.4, "gpaHours": 15 }, { "label": "ف6", "gpa": 3.45, "gpaHours": 15 }
+  ],
+  "savedScenarios": []
+}
