@@ -15,6 +15,8 @@ on:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    env:
+      HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -39,11 +41,11 @@ jobs:
           npx cap sync android
 
       - name: Decode keystore (if provided)
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: env.HAS_KEYSTORE == 'true'
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
 
       - name: Build signed release APK
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: env.HAS_KEYSTORE == 'true'
         working-directory: android
         run: |
           chmod +x gradlew
@@ -55,7 +57,7 @@ jobs:
           cp app/build/outputs/apk/release/app-release.apk ../SmartGPA.apk
 
       - name: Build debug APK (no keystore configured)
-        if: ${{ secrets.KEYSTORE_BASE64 == '' }}
+        if: env.HAS_KEYSTORE != 'true'
         working-directory: android
         run: |
           chmod +x gradlew
