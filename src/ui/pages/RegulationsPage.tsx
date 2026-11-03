@@ -76,6 +76,7 @@ export function RegulationsPage() {
               </tbody>
             </table>
           </div>
+          <p className="tiny mt">تحويل المعدل إلى نسبة مئوية: <b>{scale.percent?.noteAr ?? `المعدل ÷ ${scale.maxPoints} × 100`}</b></p>
           <p className="tiny mt">لإضافة جامعة جديدة: أضف كائن سياسة في <span className="kbd">src/core/rules.ts</span> وسلّم علامات في <span className="kbd">src/core/grading.ts</span>. الإصدارات القديمة تبقى محفوظة فلا تتغيّر الحالات المحسوبة سابقاً.</p>
         </div>
       </div>

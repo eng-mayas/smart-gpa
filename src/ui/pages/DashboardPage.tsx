@@ -41,11 +41,12 @@ export function DashboardPage({ go }: { go: (p: string) => void }) {
         </div>
       </div>
 
-      <div className="grid grid-4 mb">
-        <Stat label="المعدل التراكمي الحالي" value={fmtGpa(p.previousCgpa)} sub={`${p.previousGpaHours} ساعة محسوبة · ≈ ${gpaToPct(p.previousCgpa, scale.maxPoints)}`} accent={p.previousCgpa >= policy.goodStandingMin ? "var(--green)" : p.previousCgpa >= policy.upperRecoveryMin ? "var(--orange)" : "var(--red)"} />
+      <div className="grid grid-5 mb">
+        <Stat label="المعدل المئوي" value={p.previousGpaHours > 0 ? gpaToPct(p.previousCgpa, scale) : "—"} sub={scale.percent?.noteAr ?? `المعدل ÷ ${scale.maxPoints} × 100`} accent="var(--gold)" />
+        <Stat label="المعدل التراكمي الحالي" value={fmtGpa(p.previousCgpa)} sub={`${p.previousGpaHours} ساعة محسوبة`} accent={p.previousCgpa >= policy.goodStandingMin ? "var(--green)" : p.previousCgpa >= policy.upperRecoveryMin ? "var(--orange)" : "var(--red)"} />
         <Stat label="المعدل الفصلي الحالي (متوقع)" value={fmtGpa(semester.gpa)} sub={`${semester.gpaCredits} ساعة مُدخلة`} accent="var(--teal)" />
-        <Stat label="التراكمي المتوقع" value={fmtGpa(cumulative.newCgpa)} sub={(cumulative.delta === null ? "" : (cumulative.delta >= 0 ? "▲ " : "▼ ") + Math.abs(cumulative.delta).toFixed(3) + " · ") + `≈ ${gpaToPct(cumulative.newCgpa, scale.maxPoints)}`} accent={cumulative.newCgpa !== null && cumulative.newCgpa >= policy.goodStandingMin ? "var(--green)" : "var(--orange)"} />
-        <Stat label="مستوى الخطر" value={RISK_LABEL[riskLevel(currentState)]} sub={`${currentState.warnings} إنذار`} accent={COLOR_VAR[STATUS_COLORS[currentState.status]]} />
+        <Stat label="التراكمي المتوقع" value={fmtGpa(cumulative.newCgpa)} sub={(cumulative.delta === null ? "" : (cumulative.delta >= 0 ? "▲ " : "▼ ") + Math.abs(cumulative.delta).toFixed(3) + " · ") + `${gpaToPct(cumulative.newCgpa, scale)}`} accent={cumulative.newCgpa !== null && cumulative.newCgpa >= policy.goodStandingMin ? "var(--green)" : "var(--orange)"} />
+                <Stat label="مستوى الخطر" value={RISK_LABEL[riskLevel(currentState)]} sub={`${currentState.warnings} إنذار`} accent={COLOR_VAR[STATUS_COLORS[currentState.status]]} />
       </div>
 
       <div className="grid grid-3 mb">

@@ -17,8 +17,8 @@ export function SemesterPage() {
       </div>
 
       <div className="grid grid-4 mb">
-        <Stat label="المعدل المئوي الفصلي" value={semester.markAverage === null ? "—" : `${semester.markAverage.toFixed(1)}%`} sub={semester.markAverage === null ? "أدخل علامات مئوية لحسابه" : semester.markCredits < semester.gpaCredits ? `من ${semester.markCredits} ساعة مُدخلة كعلامة مئوية` : "متوسط موزون بالساعات للعلامات المئوية"} accent="var(--gold)" />
-        <Stat label="المعدل الفصلي" value={fmtGpa(semester.gpa)} sub={semester.gpa !== null ? `المكافئ: ${pointsToLetter(semester.gpa, scale)} · ≈ ${gpaToPct(semester.gpa, scale.maxPoints)}` : "لا توجد علامات كافية"} accent={semester.gpa === null ? "var(--gray)" : semester.gpa >= 2 ? "var(--green)" : "var(--red)"} />
+        <Stat label="المعدل المئوي الفصلي" value={semester.markAverage === null ? "—" : `${semester.markAverage.toFixed(1)}%`} sub={semester.markAverage === null ? "أدخل علامات مئوية لحسابه" : semester.markCredits < semester.gpaCredits ? `متوسط العلامات المُدخلة (${semester.markCredits} ساعة)` : "متوسط العلامات المئوية الموزون بالساعات"} accent="var(--gold)" />
+        <Stat label="المعدل الفصلي" value={fmtGpa(semester.gpa)} sub={semester.gpa !== null ? `المكافئ: ${pointsToLetter(semester.gpa, scale)} · النسبة الرسمية: ${gpaToPct(semester.gpa, scale)}` : "لا توجد علامات كافية"} accent={semester.gpa === null ? "var(--gray)" : semester.gpa >= 2 ? "var(--green)" : "var(--red)"} />
         <Stat label="ساعات الفصل" value={semester.totalCredits} sub={`تدخل في المعدل: ${semester.gpaCredits} · نقاط موزونة: ${fmtGpa(semester.totalWeighted)}`} accent="var(--primary)" />
         <Stat label="الساعات المكتسبة" value={semester.earnedCredits} sub={semester.failedCourses > 0 ? `${semester.failedCourses} مقرر راسب` : "لا رسوب"} accent={semester.failedCourses > 0 ? "var(--orange)" : "var(--green)"} />
       </div>

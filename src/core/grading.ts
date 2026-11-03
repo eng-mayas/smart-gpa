@@ -20,6 +20,8 @@ export interface GradingScale {
   nameEn: string;
   maxPoints: number;
   bands: GradeBand[];
+  /** Official percentage equivalent of a GPA: percent = gpa × multiplier + offset. Falls back to gpa ÷ maxPoints × 100. */
+  percent?: { multiplier: number; offset: number; noteAr: string };
 }
 
 /** Default scale taken from the provided grade table (Syrian private universities, 4.00 system). */
@@ -28,6 +30,7 @@ export const DEFAULT_SCALE: GradingScale = {
   nameAr: "سلّم الجامعات الخاصة السورية (4.00)",
   nameEn: "Syrian private universities (4.00)",
   maxPoints: 4,
+  percent: { multiplier: 20, offset: 20, noteAr: "النسبة المئوية = المعدل النقطي × 20 + 20" },
   bands: [
     { min: 98, max: 100, letter: "A+", points: 4.0, pass: true },
     { min: 95, max: 97, letter: "A", points: 3.75, pass: true },
@@ -69,6 +72,12 @@ export const SCALES: GradingScale[] = [DEFAULT_SCALE, US_SCALE];
 
 export function getScale(id: string): GradingScale {
   return SCALES.find((s) => s.id === id) ?? DEFAULT_SCALE;
+}
+
+/** Convert a GPA to the scale's official percentage equivalent. */
+export function gpaToPercent(gpa: number, scale: GradingScale = DEFAULT_SCALE): number {
+  if (scale.percent) return gpa * scale.percent.multiplier + scale.percent.offset;
+  return (gpa / scale.maxPoints) * 100;
 }
 
 export function isValidMark(mark: unknown): mark is number {

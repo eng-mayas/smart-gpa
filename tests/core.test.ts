@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { DEFAULT_SCALE, markToBand, letterToBand, minBandForPoints, isValidMark } from "../src/core/grading";
+import { DEFAULT_SCALE, US_SCALE, markToBand, letterToBand, minBandForPoints, isValidMark, gpaToPercent } from "../src/core/grading";
 import { calculateSemester, calculateCumulative, combineCgpa, newCourse } from "../src/core/gpa";
 import { analyzeTarget, requiredSemesterGpa, hoursNeededAtGpa, minimumGradesForTarget, standardScenarios, runScenario, courseImpact } from "../src/core/predictor";
 import { DRAFT_SY_PRIVATE_POLICY as P, INITIAL_STATE, transition, evaluateHistory, nextThresholds, AcademicState } from "../src/core/rules";
@@ -39,6 +39,12 @@ describe("grading scale boundaries", () => {
   test("letters are case-insensitive and whitespace-tolerant", () => {
     assert.equal(letterToBand(" b+ ")?.points, 3.25);
     assert.equal(letterToBand("x"), undefined);
+  });
+  test("percentage equivalent uses the scale's official formula (gpa × 20 + 20)", () => {
+    assert.equal(gpaToPercent(4, DEFAULT_SCALE), 100);
+    assert.equal(gpaToPercent(2, DEFAULT_SCALE), 60);
+    assert.equal(gpaToPercent(3.25, DEFAULT_SCALE), 85);
+    assert.equal(gpaToPercent(2, US_SCALE), 50); // fallback gpa/max×100
   });
   test("minBandForPoints picks the lowest band satisfying the requirement", () => {
     assert.equal(minBandForPoints(2.0)?.letter, "C-");

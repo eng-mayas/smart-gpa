@@ -3,7 +3,7 @@ export type Lang = "ar" | "en";
 const dict = {
   appName: { ar: "Smart GPA", en: "Smart GPA" },
   tagline: { ar: "منصة التخطيط الأكاديمي الذكية", en: "Academic planning platform" },
-  nav_dashboard: { ar: "لوحة التحكم", en: "Dashboard" },
+  nav_dashboard: { ar: "الرئيسية", en: "Home" },
   nav_semester: { ar: "حساب المعدل الفصلي", en: "Semester GPA" },
   nav_cumulative: { ar: "حساب المعدل التراكمي", en: "Cumulative GPA" },
   nav_predictor: { ar: "توقع المعدل", en: "GPA Predictor" },
