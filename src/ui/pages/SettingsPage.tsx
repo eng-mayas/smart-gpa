@@ -41,8 +41,15 @@ export function SettingsPage() {
           <div className="grid grid-2">
             <Field label="الاسم (اختياري)"><input className="input" value={p.name} onChange={(e) => setP({ name: e.target.value })} /></Field>
             <Field label="الجامعة">
-              <input className="input" list="universities-list" value={p.university} onChange={(e) => { setP({ university: e.target.value }); const u = UNIVERSITIES.find((x) => x.nameAr === e.target.value); if (u) dispatch({ type: "set", patch: { policyId: u.policyId } }); }} placeholder={OTHER_UNIVERSITY} />
-              <datalist id="universities-list">{UNIVERSITIES.map((u) => <option key={u.id} value={u.nameAr} />)}</datalist>
+              <select className="input" value={UNIVERSITIES.some((u) => u.nameAr === p.university) ? p.university : p.university ? "__other" : ""}
+                onChange={(e) => { const v = e.target.value; if (v === "__other") return setP({ university: p.university && !UNIVERSITIES.some((u) => u.nameAr === p.university) ? p.university : " " }); setP({ university: v }); const u = UNIVERSITIES.find((x) => x.nameAr === v); if (u) dispatch({ type: "set", patch: { policyId: u.policyId } }); }}>
+                <option value="">— اختر الجامعة —</option>
+                {UNIVERSITIES.map((u) => <option key={u.id} value={u.nameAr}>{u.nameAr}</option>)}
+                <option value="__other">{OTHER_UNIVERSITY}</option>
+              </select>
+              {p.university && !UNIVERSITIES.some((u) => u.nameAr === p.university) && (
+                <input className="input" style={{ marginTop: 4 }} value={p.university.trim()} placeholder="اكتب اسم الجامعة" onChange={(e) => setP({ university: e.target.value || " " })} />
+              )}
             </Field>
             <Field label="الكلية"><input className="input" value={p.faculty} onChange={(e) => setP({ faculty: e.target.value })} /></Field>
             <Field label="التخصص"><input className="input" value={p.major} onChange={(e) => setP({ major: e.target.value })} /></Field>
