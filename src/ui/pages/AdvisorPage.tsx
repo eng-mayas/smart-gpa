@@ -44,6 +44,7 @@ export function AdvisorPage() {
           <input ref={fileRef} type="file" accept=".csv,text/csv,text/plain" hidden onChange={(e) => e.target.files?.[0]?.text().then(load)} />
           <button className="btn primary" onClick={() => fileRef.current?.click()}>⬆ رفع CSV</button>
           <button className="btn" onClick={() => load(SAMPLE_STUDENTS_CSV)}>بيانات تجريبية</button>
+          <button className="btn" onClick={() => { const blob = new Blob(["\uFEFFالرقم الجامعي,الاسم,التخصص,المعدل التراكمي,الساعات المحسوبة,الساعات المنجزة,عدد الإنذارات,الساعات المسجلة\n2021001,مثال,هندسة الحاسوب,1.62,60,57,2,12\n"], { type: "text/csv;charset=utf-8" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "students-template.csv"; a.click(); }}>⬇ قالب CSV</button>
           {assessments.length > 0 && <button className="btn" onClick={exportCsv}>⬇ تصدير التقييم</button>}
           {assessments.length > 0 && <button className="btn danger" onClick={() => dispatch({ type: "advisorStudents", students: [] })}>مسح</button>}
         </div>
