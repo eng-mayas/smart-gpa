@@ -2,7 +2,7 @@ import React from "react";
 import { useAcademic } from "../../state/useAcademic";
 import { CourseTable } from "../components/CourseTable";
 import { Field, Gauge, NumberInput, Stat, StatusBadge, RiskBadge } from "../components/common";
-import { fmtDelta, fmtGpa } from "../../core/format";
+import { fmtDelta, fmtGpa, gpaToPct } from "../../core/format";
 
 export function CumulativePage() {
   const { state, dispatch, scale, semester, cumulative, predicted, policy } = useAcademic();
@@ -38,6 +38,7 @@ export function CumulativePage() {
         </div>
         <div className="stack">
           <Stat label="المعدل الفصلي الحالي" value={fmtGpa(cumulative.semesterGpa)} sub={`${cumulative.semesterGpaHours} ساعة`} accent="var(--teal)" />
+          <Stat label="المكافئ المئوي للتراكمي الجديد" value={ready ? gpaToPct(cumulative.newCgpa, scale.maxPoints) : "—"} sub={`تقريبي: المعدل ÷ ${scale.maxPoints} × 100 — تختلف طريقة التحويل بين الجامعات`} accent="var(--gold)" />
           <Stat label="التغيّر في المعدل" value={fmtDelta(cumulative.delta)} sub={cumulative.delta === null ? "—" : cumulative.delta >= 0 ? "ارتفاع" : "انخفاض"} accent={cumulative.delta === null ? "var(--gray)" : cumulative.delta >= 0 ? "var(--green)" : "var(--red)"} />
         </div>
       </div>

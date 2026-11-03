@@ -58,6 +58,9 @@ describe("semester GPA", () => {
     assert.equal(r.gpaCredits, 9);
     assert.equal(r.earnedCredits, 5);
     assert.equal(r.failedCourses, 1);
+    // percentage average uses only mark-entered courses: (85×3 + 45×4) / 7
+    close(r.markAverage, (85 * 3 + 45 * 4) / 7);
+    assert.equal(r.markCredits, 7);
   });
   test("zero-credit, withdrawn, excluded and pass/fail do not affect GPA", () => {
     const r = calculateSemester([

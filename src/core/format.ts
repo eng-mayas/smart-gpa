@@ -10,6 +10,12 @@ export function fmtDelta(v: number | null | undefined): string {
   return v > 0 ? `+${s}` : s;
 }
 
+/** Approximate percentage equivalent of a GPA (GPA ÷ max × 100). Universities differ; shown as an estimate. */
+export function gpaToPct(gpa: number | null | undefined, max = 4): string {
+  if (gpa === null || gpa === undefined || !Number.isFinite(gpa)) return "—";
+  return `${((gpa / max) * 100).toFixed(1)}%`;
+}
+
 export function fmtPct(v: number): string {
   return `${Math.round(v)}%`;
 }

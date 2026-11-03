@@ -2,7 +2,7 @@ import React from "react";
 import { useAcademic } from "../../state/useAcademic";
 import { CourseTable } from "../components/CourseTable";
 import { Gauge, Stat } from "../components/common";
-import { fmtGpa } from "../../core/format";
+import { fmtGpa, gpaToPct } from "../../core/format";
 import { pointsToLetter } from "../../core/grading";
 
 export function SemesterPage() {
@@ -17,9 +17,9 @@ export function SemesterPage() {
       </div>
 
       <div className="grid grid-4 mb">
-        <Stat label="المعدل الفصلي" value={fmtGpa(semester.gpa)} sub={semester.gpa !== null ? `المكافئ: ${pointsToLetter(semester.gpa, scale)}` : "لا توجد علامات كافية"} accent={semester.gpa === null ? "var(--gray)" : semester.gpa >= 2 ? "var(--green)" : "var(--red)"} />
-        <Stat label="ساعات الفصل" value={semester.totalCredits} sub={`تدخل في المعدل: ${semester.gpaCredits}`} accent="var(--primary)" />
-        <Stat label="النقاط الموزونة" value={fmtGpa(semester.totalWeighted)} sub="Σ (النقاط × الساعات)" accent="var(--teal)" />
+        <Stat label="المعدل المئوي الفصلي" value={semester.markAverage === null ? "—" : `${semester.markAverage.toFixed(1)}%`} sub={semester.markAverage === null ? "أدخل علامات مئوية لحسابه" : semester.markCredits < semester.gpaCredits ? `من ${semester.markCredits} ساعة مُدخلة كعلامة مئوية` : "متوسط موزون بالساعات للعلامات المئوية"} accent="var(--gold)" />
+        <Stat label="المعدل الفصلي" value={fmtGpa(semester.gpa)} sub={semester.gpa !== null ? `المكافئ: ${pointsToLetter(semester.gpa, scale)} · ≈ ${gpaToPct(semester.gpa, scale.maxPoints)}` : "لا توجد علامات كافية"} accent={semester.gpa === null ? "var(--gray)" : semester.gpa >= 2 ? "var(--green)" : "var(--red)"} />
+        <Stat label="ساعات الفصل" value={semester.totalCredits} sub={`تدخل في المعدل: ${semester.gpaCredits} · نقاط موزونة: ${fmtGpa(semester.totalWeighted)}`} accent="var(--primary)" />
         <Stat label="الساعات المكتسبة" value={semester.earnedCredits} sub={semester.failedCourses > 0 ? `${semester.failedCourses} مقرر راسب` : "لا رسوب"} accent={semester.failedCourses > 0 ? "var(--orange)" : "var(--green)"} />
       </div>
 

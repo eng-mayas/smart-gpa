@@ -46,6 +46,10 @@ export interface SemesterResult {
   earnedCredits: number;
   failedCourses: number;
   missingGrades: number;
+  /** Credit-weighted average of the raw percentage marks (only courses entered as marks). Null if none. */
+  markAverage: number | null;
+  /** Credits behind markAverage */
+  markCredits: number;
 }
 
 export function isValidCredits(c: unknown): c is number {
@@ -88,6 +92,8 @@ export function calculateSemester(courses: Course[], scale: GradingScale = DEFAU
   let earned = 0;
   let failed = 0;
   let missing = 0;
+  let markSum = 0;
+  let markCredits = 0;
   for (const r of results) {
     if (r.course.status !== "withdrawn" && r.course.status !== "excluded" && isValidCredits(r.course.credits)) {
       totalCredits += r.course.credits;
@@ -96,6 +102,10 @@ export function calculateSemester(courses: Course[], scale: GradingScale = DEFAU
     if (r.countsInGpa && r.weighted !== undefined) {
       gpaCredits += r.course.credits;
       totalWeighted += r.weighted;
+      if (r.course.grade.kind === "mark") {
+        markSum += r.course.grade.value * r.course.credits;
+        markCredits += r.course.credits;
+      }
     }
     if (r.passed === true) earned += r.course.credits;
     if (r.passed === false) failed++;
@@ -109,6 +119,8 @@ export function calculateSemester(courses: Course[], scale: GradingScale = DEFAU
     earnedCredits: earned,
     failedCourses: failed,
     missingGrades: missing,
+    markAverage: markCredits > 0 ? markSum / markCredits : null,
+    markCredits,
   };
 }
 
