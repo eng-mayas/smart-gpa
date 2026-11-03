@@ -9,7 +9,7 @@ cpSync("index.html", "dist/index.html");
 cpSync("public", "dist", { recursive: true });
 // Stamp the service worker so each build invalidates the previous cache.
 const buildStamp = Date.now().toString(36);
-writeFileSync("dist/sw.js", readFileSync("public/sw.js", "utf8").replace("__BUILD__", buildStamp));
+writeFileSync("dist/sw.js", readFileSync("public/sw.js", "utf8").replaceAll("__BUILD__", buildStamp));
 
 const opts = {
   entryPoints: { app: "src/main.tsx" },
