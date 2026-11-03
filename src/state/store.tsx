@@ -51,6 +51,8 @@ export interface AppState {
   advisorStudents: StudentRecord[];
   /** Optional URL of an extraction service for photo/PDF import */
   extractionEndpoint: string;
+  /** True while the preloaded demo data has not been touched */
+  demo: boolean;
 }
 
 export const SAMPLE_COURSES: Course[] = [
@@ -101,6 +103,7 @@ export const INITIAL_APP_STATE: AppState = {
   components: {},
   advisorStudents: [],
   extractionEndpoint: "",
+  demo: true,
 };
 
 type Action =
@@ -132,6 +135,14 @@ function load(): AppState {
 }
 
 function reducer(state: AppState, action: Action): AppState {
+  const next = reduce(state, action);
+  // Any real data entry ends demo mode; UI-only settings keep it.
+  if (action.type === "loadSample") return { ...next, demo: true };
+  if (action.type !== "set") return { ...next, demo: false };
+  return next;
+}
+
+function reduce(state: AppState, action: Action): AppState {
   switch (action.type) {
     case "set":
       return { ...state, ...action.patch };

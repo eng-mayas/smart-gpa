@@ -6,7 +6,7 @@ import { describeState, nextThresholds, riskLevel, STATUS_COLORS } from "../../c
 import { requiredSemesterGpa } from "../../core/predictor";
 
 export function DashboardPage({ go }: { go: (p: string) => void }) {
-  const { state, scale, policy, semester, cumulative, currentState, predicted, timeline, historyHours } = useAcademic();
+  const { state, dispatch, scale, policy, semester, cumulative, currentState, predicted, timeline, historyHours } = useAcademic();
   const p = state.profile;
   const th = nextThresholds(currentState, policy, p.completedCredits);
   const reqSafe = requiredSemesterGpa({ previousCgpa: p.previousCgpa, previousGpaHours: p.previousGpaHours, semesterHours: semester.totalCredits, targetCgpa: th.safe });
@@ -28,6 +28,15 @@ export function DashboardPage({ go }: { go: (p: string) => void }) {
 
   return (
     <>
+      {state.demo && (
+        <div className="alert warn mb" style={{ alignItems: "center", justifyContent: "space-between" }}>
+          <div>🧪 <b>هذه بيانات تجريبية</b> للتعرف على التطبيق وليست بياناتك. ابدأ بإدخال معدلك وفصولك، أو امسحها وابدأ من الصفر.</div>
+          <div className="row">
+            <button className="btn sm primary" onClick={() => go("settings")}>إدخال بياناتي</button>
+            <button className="btn sm" onClick={() => dispatch({ type: "reset" })}>مسح البيانات التجريبية</button>
+          </div>
+        </div>
+      )}
       <div className="hero mb">
         <div className="row between">
           <img className="hero-logo" src="./atmata-logo.png" alt="Atmata Group" />
