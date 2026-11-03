@@ -24,6 +24,9 @@ export function CourseTable({
   const update = (id: string, patch: Partial<Course>) => onChange(courses.map((c) => (c.id === id ? { ...c, ...patch } : c)));
   const remove = (id: string) => onChange(courses.filter((c) => c.id !== id));
   const add = () => onChange([...courses, newCourse({ name: `مقرر ${courses.length + 1}` })]);
+  // Letter of the previous attempt: the band whose points match (closest from below).
+  const prevLetter = (points: number) =>
+    [...scale.bands].sort((a, b) => b.points - a.points).find((b) => b.points <= points + 1e-9)?.letter ?? scale.bands[scale.bands.length - 1].letter;
 
   return (
     <div>
@@ -77,10 +80,13 @@ export function CourseTable({
                       {(Object.keys(STATUS_LABEL) as CourseStatus[]).map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
                     </select>
                     {c.status === "repeat" && (
-                      <div className="row" style={{ marginTop: 4, gap: 4, justifyContent: "center" }}>
-                        <span className="tiny">نقاط المحاولة السابقة</span>
-                        <NumberInput value={c.previousPoints ?? 0} min={0} max={scale.maxPoints} step={0.25} className="sm" ariaLabel="نقاط المحاولة السابقة"
-                          onChange={(v) => update(c.id, { previousPoints: v === "" ? 0 : v })} />
+                      <div className="row" style={{ marginTop: 4, gap: 4, justifyContent: "center", flexWrap: "nowrap" }}>
+                        <span className="tiny" style={{ whiteSpace: "nowrap" }}>العلامة السابقة</span>
+                        <select className="input" style={{ width: "auto" }} aria-label="المكافئ الحرفي للمحاولة السابقة"
+                          value={prevLetter(c.previousPoints ?? 0)}
+                          onChange={(e) => update(c.id, { previousPoints: scale.bands.find((b) => b.letter === e.target.value)?.points ?? 0 })}>
+                          {scale.bands.map((b) => <option key={b.letter} value={b.letter}>{b.letter} ({b.points})</option>)}
+                        </select>
                       </div>
                     )}
                   </td>
