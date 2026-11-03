@@ -1,23 +1,23 @@
 import { StudyPlan } from "../plan";
 
 /**
- * International University for Science & Technology (IUST) — Computer Engineering (Bachelor).
- * Extracted by OCR from the official "Course Description" document (printed 2021).
+ * Sample plan — Computer Engineering (Bachelor), credit-hour system.
+ * Extracted by OCR from a private Syrian university's course-description document (2021); shown as a generic sample.
  * Where the prerequisite line was not legible in the scan, a prerequisite was inferred from the course
  * sequence (e.g. labs ↔ their theory course) or left empty — verify every prerequisite against the official plan.
  * Level = 4th digit of the course code (1 = first year … 5 = fifth year).
  */
-export const IUST_COMPUTER_ENGINEERING: StudyPlan = {
-  id: "iust-ce-2021",
-  universityAr: "الجامعة الدولية الخاصة للعلوم والتكنولوجيا (IUST)",
-  universityEn: "International University for Science & Technology",
+export const SAMPLE_COMPUTER_ENGINEERING: StudyPlan = {
+  id: "sample-ce-2021",
+  universityAr: "خطة نموذجية (جامعة خاصة سورية)",
+  universityEn: "Sample plan (Syrian private university)",
   majorAr: "هندسة الحاسوب",
   majorEn: "Computer Engineering",
   degree: "بكالوريوس",
   /** Sum of the extracted courses; the official total may include extra electives. */
   totalCredits: 158,
   verification: "draft",
-  sourceRef: "وصف المقررات الرسمي (Course Description) — مسح ضوئي 2021. استخراج آلي: بعض المتطلبات السابقة مستنتجة من تسلسل المقررات ويجب تدقيقها.",
+  sourceRef: "خطة نموذجية مستخرجة آلياً من وصف مقررات (2021) لأغراض التجربة. بعض المتطلبات السابقة مستنتجة من تسلسل المقررات ويجب تدقيقها مع خطة جامعتك.",
   courses: [
     // University requirements
     { code: "401101", name: "Computer Skills (1)", nameAr: "مهارات حاسوب (1)", credits: 3, prereqs: [], type: "university" },

@@ -293,8 +293,8 @@ export function planToCsv(plan: StudyPlan): string {
 }
 
 /* ---------- Built-in plans registry ---------- */
-import { IUST_COMPUTER_ENGINEERING } from "./plans/iust-computer-engineering";
-export const BUILTIN_PLANS: StudyPlan[] = [IUST_COMPUTER_ENGINEERING];
+import { SAMPLE_COMPUTER_ENGINEERING } from "./plans/sample-computer-engineering";
+export const BUILTIN_PLANS: StudyPlan[] = [SAMPLE_COMPUTER_ENGINEERING];
 
 /* ---------- Student overrides (fix a prerequisite without waiting for a new release) ---------- */
 export interface PlanCourseOverride { prereqs?: string[]; coreqs?: string[]; credits?: number }

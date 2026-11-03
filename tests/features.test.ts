@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { IUST_COMPUTER_ENGINEERING as PLAN } from "../src/core/plans/iust-computer-engineering";
+import { SAMPLE_COMPUTER_ENGINEERING as PLAN } from "../src/core/plans/sample-computer-engineering";
 import { summarizePlan, eligibleCourses, suggestRegistration, repeatStrategy, projectGraduation, parsePlanText, levelOf, unlockCount, PlanProgress } from "../src/core/plan";
 import { standing, neededForEachLetter, neededForMark, GradeComponent } from "../src/core/components";
 import { parseTranscriptText, normalizeDigits } from "../src/core/importer";
@@ -10,7 +10,7 @@ import { DRAFT_SY_PRIVATE_POLICY as P } from "../src/core/rules";
 const close = (a: number | null, b: number, eps = 1e-9) => { assert.ok(a !== null); assert.ok(Math.abs(a - b) < eps, `${a} ≈ ${b}`); };
 
 describe("study plan", () => {
-  test("built-in IUST plan is consistent", () => {
+  test("built-in sample plan is consistent", () => {
     const codes = new Set(PLAN.courses.map((c) => c.code));
     assert.equal(codes.size, PLAN.courses.length, "duplicate codes");
     for (const c of PLAN.courses) for (const p of c.prereqs) assert.ok(codes.has(p), `${c.code} prereq ${p} missing`);
