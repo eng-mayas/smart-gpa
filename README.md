@@ -84,7 +84,7 @@ build.mjs             سكربت البناء (esbuild)
 
 ### 1) PWA — قابل للتثبيت فوراً من المتصفح (مضمّن)
 المشروع يحوي `public/manifest.webmanifest` و`public/sw.js` (عمل دون اتصال) وأيقونات 192/512 maskable. يكفي رفع مجلد `dist/` على استضافة HTTPS (Netlify، Vercel، Cloudflare Pages، GitHub Pages) وسيظهر خيار «إضافة إلى الشاشة الرئيسية» على Android وiOS.
-> عند كل إصدار جديد غيّر قيمة `CACHE` في `sw.js`.
+> اسم الكاش في `sw.js` يُختم تلقائياً عند كل بناء، فلا حاجة لتعديله يدوياً.
 
 ### 2) تطبيق أصلي للمتاجر عبر Capacitor
 ```bash
