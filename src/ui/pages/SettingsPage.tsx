@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { useStore } from "../../state/store";
 import { Field, NumberInput } from "../components/common";
 import { exportBackup } from "../../state/backup";
+import { UNIVERSITIES, OTHER_UNIVERSITY } from "../../core/universities";
 
 export function SettingsPage() {
   const { state, dispatch } = useStore();
@@ -39,7 +40,10 @@ export function SettingsPage() {
           <h2>الملف الأكاديمي</h2>
           <div className="grid grid-2">
             <Field label="الاسم (اختياري)"><input className="input" value={p.name} onChange={(e) => setP({ name: e.target.value })} /></Field>
-            <Field label="الجامعة"><input className="input" value={p.university} onChange={(e) => setP({ university: e.target.value })} /></Field>
+            <Field label="الجامعة">
+              <input className="input" list="universities-list" value={p.university} onChange={(e) => { setP({ university: e.target.value }); const u = UNIVERSITIES.find((x) => x.nameAr === e.target.value); if (u) dispatch({ type: "set", patch: { policyId: u.policyId } }); }} placeholder={OTHER_UNIVERSITY} />
+              <datalist id="universities-list">{UNIVERSITIES.map((u) => <option key={u.id} value={u.nameAr} />)}</datalist>
+            </Field>
             <Field label="الكلية"><input className="input" value={p.faculty} onChange={(e) => setP({ faculty: e.target.value })} /></Field>
             <Field label="التخصص"><input className="input" value={p.major} onChange={(e) => setP({ major: e.target.value })} /></Field>
             <Field label="النظام الأكاديمي"><input className="input" value={p.academicSystem} onChange={(e) => setP({ academicSystem: e.target.value })} /></Field>

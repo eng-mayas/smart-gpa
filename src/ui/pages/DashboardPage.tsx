@@ -4,7 +4,7 @@ import { Gauge, Stat, StatusBadge, RiskBadge, Progress, LineChart, BarChart, RIS
 import { fmtGpa, fmtPct, gpaToPct } from "../../core/format";
 import { describeState, nextThresholds, riskLevel, STATUS_COLORS } from "../../core/rules";
 import { requiredSemesterGpa } from "../../core/predictor";
-import { Onboarding } from "../components/Onboarding";
+import { QuickStart } from "../components/QuickStart";
 import { backupDue, exportBackup } from "../../state/backup";
 
 export function DashboardPage({ go }: { go: (p: string) => void }) {
@@ -28,17 +28,9 @@ export function DashboardPage({ go }: { go: (p: string) => void }) {
 
   const hist = timeline.length > 0;
 
-  if (!state.onboarded) {
-    return (
-      <>
-        <Onboarding onDone={() => dispatch({ type: "set", patch: { onboarded: true } })} go={go} />
-        <p className="tiny" style={{ textAlign: "center" }}>بعد الحفظ تظهر الرئيسية بمؤشراتك.</p>
-      </>
-    );
-  }
-
   return (
     <>
+      {!state.onboarded && state.demo && <QuickStart onDone={() => dispatch({ type: "set", patch: { onboarded: true } })} go={go} />}
       {backupDue(state) && (
         <div className="alert info mb" style={{ alignItems: "center", justifyContent: "space-between" }}>
           <div>💾 بياناتك محفوظة في هذا المتصفح فقط. احفظ نسخة احتياطية حتى لا تخسرها عند تغيير الجهاز.</div>
