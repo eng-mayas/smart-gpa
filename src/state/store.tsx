@@ -95,7 +95,7 @@ export const INITIAL_APP_STATE: AppState = {
   theme: "light",
   lang: "ar",
   scaleId: "sy-private-4.0",
-  policyId: "sy-private-draft",
+  policyId: "sy-private-unified-v1",
   profile: DEFAULT_PROFILE,
   courses: SAMPLE_COURSES,
   history: SAMPLE_HISTORY,
@@ -134,7 +134,10 @@ function load(): AppState {
     if (!raw) return INITIAL_APP_STATE;
     const parsed = JSON.parse(raw) as AppState;
     if (parsed.version !== 1) return INITIAL_APP_STATE;
-    return { ...INITIAL_APP_STATE, ...parsed, profile: { ...DEFAULT_PROFILE, ...parsed.profile } };
+    const merged = { ...INITIAL_APP_STATE, ...parsed, profile: { ...DEFAULT_PROFILE, ...parsed.profile } };
+    // Migration: the hand-drawn draft was the only policy before the verified unified system was added.
+    if (parsed.policyId === "sy-private-draft" && !("policyMigrated" in parsed)) merged.policyId = "sy-private-unified-v1";
+    return merged;
   } catch {
     return INITIAL_APP_STATE;
   }

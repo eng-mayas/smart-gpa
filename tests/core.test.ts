@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { DEFAULT_SCALE, US_SCALE, markToBand, letterToBand, minBandForPoints, isValidMark, gpaToPercent } from "../src/core/grading";
 import { calculateSemester, calculateCumulative, combineCgpa, newCourse } from "../src/core/gpa";
 import { analyzeTarget, requiredSemesterGpa, hoursNeededAtGpa, minimumGradesForTarget, standardScenarios, runScenario, courseImpact } from "../src/core/predictor";
-import { DRAFT_SY_PRIVATE_POLICY as P, INITIAL_STATE, transition, evaluateHistory, nextThresholds, AcademicState } from "../src/core/rules";
+import { DRAFT_SY_PRIVATE_POLICY as P, UNIFIED_SY_PRIVATE_POLICY as U, INITIAL_STATE, transition, evaluateHistory, nextThresholds, AcademicState } from "../src/core/rules";
 
 const close = (a: number | null, b: number, eps = 1e-9) => {
   assert.ok(a !== null, "expected a number");
@@ -260,5 +260,50 @@ describe("academic rules FSM (draft policy)", () => {
     assert.equal(nextThresholds({ ...INITIAL_STATE, status: "remedial_long", remaining: 1 }, P, 50).survive, 2.0);
     assert.equal(nextThresholds({ ...INITIAL_STATE, status: "remedial_long", remaining: 1 }, P, 99).survive, 1.75);
     assert.equal(nextThresholds({ ...INITIAL_STATE, status: "dismissed_university" }, P).survive, null);
+  });
+});
+
+describe("unified Syrian private universities policy (verified)", () => {
+  const step = (s: AcademicState, cgpa: number | null, credits = 0) => transition(s, cgpa, U, credits).to;
+  test("warning must be cleared within two semesters, then remedial study", () => {
+    const s1 = step(INITIAL_STATE, null); // semester 1: not evaluated
+    const w1 = step(s1, 1.8); // semester 2
+    assert.equal(w1.status, "warning_1");
+    const w2 = step(w1, 1.9); // one semester after the warning
+    assert.equal(w2.status, "warning_2");
+    const rem = step(w2, 1.6); // two semesters passed, still < 2 → remedial, 4 semesters
+    assert.equal(rem.status, "remedial_long");
+    assert.equal(rem.remaining, 4);
+    assert.equal(step(w2, 2.0).status, "good");
+  });
+  test("1.00–1.49 gets one semester to reach 1.50, then three more", () => {
+    const w2: AcademicState = { ...INITIAL_STATE, status: "warning_2", warnings: 2, semesterIndex: 3 };
+    const short = step(w2, 1.3);
+    assert.equal(short.status, "remedial_short");
+    assert.equal(short.remaining, 1);
+    const longer = step(short, 1.5);
+    assert.equal(longer.status, "remedial_long");
+    assert.equal(longer.remaining, 3);
+    assert.equal(step(short, 1.49).status, "dismissed_specialization");
+  });
+  test("four remedial semesters then 99h/1.75 exception, then university dismissal", () => {
+    let s: AcademicState = { ...INITIAL_STATE, status: "remedial_long", warnings: 2, remaining: 4, semesterIndex: 4 };
+    s = step(s, 1.7); s = step(s, 1.7); s = step(s, 1.7);
+    assert.equal(s.status, "remedial_long"); assert.equal(s.remaining, 1);
+    assert.equal(step(s, 1.7, 60).status, "dismissed_university");
+    const ex = step(s, 1.8, 99);
+    assert.equal(ex.status, "exception"); assert.equal(ex.remaining, 2);
+    assert.equal(step(step(ex, 1.9), 1.95).status, "dismissed_university");
+    assert.equal(step(ex, 2.0).status, "good");
+  });
+  test("below 1.00 → specialization dismissal; may transfer once; second time → university dismissal", () => {
+    const g: AcademicState = { ...INITIAL_STATE, status: "good", semesterIndex: 3 };
+    const d = step(g, 0.9);
+    assert.equal(d.status, "dismissed_specialization");
+    assert.equal(step(d, 0.95).status, "dismissed_university");
+    assert.equal(step(d, 2.2).status, "good");
+    assert.equal(step(d, 1.5).status, "warning_1");
+    // draft policy keeps specialization dismissal terminal
+    assert.equal(transition(d, 2.2, P).evaluated, false);
   });
 });

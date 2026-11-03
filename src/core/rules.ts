@@ -46,6 +46,12 @@ export interface AcademicPolicy {
   shortRemedialSemesters: number;
   /** After a short remedial semester, reaching upperRecoveryMin grants this many extra semesters */
   shortToLongSemesters: number;
+  /** A student dismissed from a specialization for CGPA < threshold may continue in another one; a second time → university dismissal */
+  specializationDismissalAllowsTransfer?: boolean;
+  /** Max credit load while in remedial study (informational, used by registration suggestions) */
+  remedialMaxCredits?: number;
+  /** Article references for display */
+  articlesAr?: string[];
   /** Exceptional provision (optional) */
   exception?: {
     minCompletedCredits: number;
@@ -83,7 +89,48 @@ export const DRAFT_SY_PRIVATE_POLICY: AcademicPolicy = {
   },
 };
 
-export const POLICIES: AcademicPolicy[] = [DRAFT_SY_PRIVATE_POLICY];
+/**
+ * Unified Examination & Evaluation System of Syrian Private Universities
+ * (نظام الامتحانات والتقويم الموحد للجامعات الخاصة السورية), Articles 5, 13–15, 21–26.
+ * Verified against the identical texts published by SPU, AIU, AUST and MAS (Nov 2026).
+ */
+export const UNIFIED_SY_PRIVATE_POLICY: AcademicPolicy = {
+  id: "sy-private-unified-v1",
+  version: "1.0.0",
+  universityId: "sy-private-unified",
+  universityNameAr: "النظام الموحد للجامعات الخاصة السورية",
+  academicSystem: "credit-hours-4.0",
+  effectiveFrom: "2024-2025",
+  verification: "verified",
+  sourceRef: "نظام الامتحانات والتقويم الموحد للجامعات الخاصة السورية — المواد 5، 13–15، 21–26 (نصوص منشورة على مواقع الجامعة السورية الخاصة، الجامعة العربية الدولية، الجامعة العربية الخاصة للعلوم والتكنولوجيا، جامعة المعالي)",
+  notesAr:
+    "يبدأ توجيه الإنذار من الفصل التالي لفصل التسجيل ولا يُحتسب الفصل الصيفي. يُلغى الإنذار برفع المعدل إلى 2.00 خلال فصلين. من لم يرفعه يُفصل من التخصص ويجوز قبوله في الدراسة الخاصة الاستدراكية: معدل ≥ 1.50 → أربعة فصول؛ معدل 1.00–1.49 → فصل واحد للوصول إلى 1.50 ثم ثلاثة فصول. من أنهى 99 ساعة بمعدل ≥ 1.75 يُمنح فصلين إضافيين. أقل من 1.00 بعد الفصل الأول → فصل من التخصص، وتكراره → فصل من الجامعة. العبء الأقصى في الاستدراكية 15 ساعة (6 صيفاً). ملاحظة: نسخة إحدى الجامعات تذكر 1.75 بدل 1.50 كحد للمسار الأطول.",
+  articlesAr: [
+    "المادة 21: الإنذار الأكاديمي عند نزول المعدل التراكمي عن نقطتين، ويُلغى برفعه إلى نقطتين خلال فصلين كحد أقصى.",
+    "المادة 22: الدراسة الخاصة الاستدراكية — أربعة فصول لمن معدله ≥ 1.5؛ فصل واحد لرفع المعدل إلى 1.5 ثم ثلاثة فصول لمن معدله 1–1.49؛ استثناء 99 ساعة ومعدل ≥ 1.75 بفصلين إضافيين؛ العبء 15 ساعة.",
+    "المادة 23: الفصل من التخصص عند أقل من نقطة واحدة في أي فصل بعد الأول (عدا الصيفي)، وتكراره يؤدي إلى الفصل من الجامعة.",
+    "المادة 24: الطالب الحاصل على تقدير غير مكتمل (I) وهو تحت طائلة الفصل لا يتابع إلا بعد استكمال علاماته.",
+    "المادة 26 (د): المعدل المئوي = المعدل النقطي × 20 + 20.",
+  ],
+  cgpaStartsAtSemester: 2,
+  goodStandingMin: 2.0,
+  specializationDismissalBelow: 1.0,
+  maxWarnings: 2,
+  upperRecoveryMin: 1.5,
+  longRemedialSemesters: 4,
+  shortRemedialSemesters: 1,
+  shortToLongSemesters: 3,
+  specializationDismissalAllowsTransfer: true,
+  remedialMaxCredits: 15,
+  exception: {
+    minCompletedCredits: 99,
+    minCgpa: 1.75,
+    extraSemesters: 2,
+    descriptionAr: "من أنهى بنجاح 99 ساعة معتمدة وفق خطته ومعدله التراكمي ≥ 1.75 يُمنح فصلين إضافيين كحد أعلى.",
+  },
+};
+
+export const POLICIES: AcademicPolicy[] = [UNIFIED_SY_PRIVATE_POLICY, DRAFT_SY_PRIVATE_POLICY];
 
 export interface AcademicState {
   status: AcademicStatus;
@@ -181,8 +228,18 @@ export function transition(
     evaluated,
   });
 
-  if (isTerminal(state.status)) {
+  if (state.status === "dismissed_university") {
     return base({}, "الحالة نهائية ضمن هذه السياسة؛ لا تُطبَّق انتقالات إضافية.", false);
+  }
+  if (state.status === "dismissed_specialization") {
+    if (!policy.specializationDismissalAllowsTransfer) return base({}, "الحالة نهائية ضمن هذه السياسة؛ لا تُطبَّق انتقالات إضافية.", false);
+    if (cgpa === null || !Number.isFinite(cgpa)) return base({}, "لا يمكن تقييم الوضع الأكاديمي بدون معدل تراكمي.", false);
+    // Student continued in another specialization (allowed once).
+    if (cgpa < policy.specializationDismissalBelow) {
+      return base({ status: "dismissed_university", remaining: 0 }, `تكرر الحصول على أقل من ${f(policy.specializationDismissalBelow)} (${f(cgpa)}) بعد الفصل من التخصص: السياسة تنص على الفصل من الجامعة.*`);
+    }
+    if (cgpa >= policy.goodStandingMin) return base({ status: "good", remaining: 0 }, `بعد الانتقال إلى تخصص آخر، المعدل ${f(cgpa)} ≥ ${f(policy.goodStandingMin)}: وضع أكاديمي سليم.`);
+    return base({ status: "warning_1", warnings: state.warnings + 1 }, `بعد الانتقال إلى تخصص آخر، المعدل ${f(cgpa)} دون ${f(policy.goodStandingMin)}: إنذار أكاديمي.`);
   }
   if (next.semesterIndex < policy.cgpaStartsAtSemester) {
     return base(
@@ -400,7 +457,9 @@ export function describeState(state: AcademicState, policy: AcademicPolicy): str
     case "exception":
       return `فصول إضافية بموجب الاستثناء (المتبقي: ${state.remaining}). يجب الوصول إلى ${f(policy.goodStandingMin)} قبل انتهائها.`;
     case "dismissed_specialization":
-      return "وفق السياسة المهيّأة تنطبق حالة الفصل من التخصص. هذا تقدير برمجي وليس قراراً رسمياً — راجع شؤون الطلاب.";
+      return policy.specializationDismissalAllowsTransfer
+        ? "وفق السياسة تنطبق حالة الفصل من التخصص؛ يجوز الانتقال إلى تخصص آخر مرة واحدة، وتكرار المعدل دون الحد يعني الفصل من الجامعة. تقدير برمجي وليس قراراً رسمياً."
+        : "وفق السياسة المهيّأة تنطبق حالة الفصل من التخصص. هذا تقدير برمجي وليس قراراً رسمياً — راجع شؤون الطلاب.";
     case "dismissed_university":
       return "وفق السياسة المهيّأة تنطبق حالة الفصل من الجامعة. هذا تقدير برمجي وليس قراراً رسمياً — راجع شؤون الطلاب.";
   }

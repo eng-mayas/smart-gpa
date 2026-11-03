@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useStore } from "./store";
 import { getScale } from "../core/grading";
 import { calculateCumulative, calculateSemester } from "../core/gpa";
-import { AcademicState, DRAFT_SY_PRIVATE_POLICY, INITIAL_STATE, POLICIES, evaluateHistory, transition } from "../core/rules";
+import { AcademicState, UNIFIED_SY_PRIVATE_POLICY, INITIAL_STATE, POLICIES, evaluateHistory, transition } from "../core/rules";
 import { BUILTIN_PLANS, applyOverrides, StudyPlan } from "../core/plan";
 
 /** Derive the current FSM state: from the history when present, otherwise from the profile's warning count. */
@@ -15,7 +15,7 @@ export function useAcademic() {
   const { state, dispatch } = useStore();
   return useMemo(() => {
     const scale = getScale(state.scaleId);
-    const policy = POLICIES.find((p) => p.id === state.policyId) ?? DRAFT_SY_PRIVATE_POLICY;
+    const policy = POLICIES.find((p) => p.id === state.policyId) ?? UNIFIED_SY_PRIVATE_POLICY;
     const semester = calculateSemester(state.courses, scale);
     const { previousCgpa, previousGpaHours, completedCredits, previousWarnings } = state.profile;
     const cumulative = calculateCumulative({ previousCgpa, previousGpaHours, semester });

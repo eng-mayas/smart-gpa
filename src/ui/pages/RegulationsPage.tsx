@@ -21,6 +21,8 @@ export function RegulationsPage() {
     ["حد المسار الاستدراكي الطويل", `≥ ${fmtGpa(policy.upperRecoveryMin)} → ${policy.longRemedialSemesters} فصل`],
     ["المسار الاستدراكي القصير", `${fmtGpa(policy.specializationDismissalBelow)} – ${fmtGpa(policy.upperRecoveryMin)} → ${policy.shortRemedialSemesters} فصل، ثم ${policy.shortToLongSemesters} فصل إضافي إن ارتفع المعدل إلى ${fmtGpa(policy.upperRecoveryMin)}`],
     ["الاستثناء", policy.exception ? policy.exception.descriptionAr : "لا يوجد"],
+    ["الانتقال بعد الفصل من التخصص", policy.specializationDismissalAllowsTransfer ? "مسموح مرة واحدة؛ تكرار المعدل دون الحد → فصل من الجامعة" : "غير محدد"],
+    ["العبء الأقصى في الدراسة الاستدراكية", policy.remedialMaxCredits ? `${policy.remedialMaxCredits} ساعة` : "—"],
     ["ملاحظات", policy.notesAr ?? "—"],
   ];
 
@@ -33,11 +35,11 @@ export function RegulationsPage() {
         </div>
       </div>
 
-      <div className="alert warn mb">
-        <div>
-          ⚠ السياسة الحالية <b>مسودة</b> مستخرجة من مخطط يدوي، وقد تختلف عن اللائحة الرسمية لجامعتك. التطبيق أداة مساعدة ولا يُصدر قرارات أكاديمية.
-        </div>
-      </div>
+      {policy.verification === "verified" ? (
+        <div className="alert ok mb"><div>✅ السياسة الحالية <b>موثّقة</b> من نص النظام الموحد المنشور. قد تطبّق جامعتك تفاصيل إضافية؛ التطبيق أداة مساعدة ولا يُصدر قرارات أكاديمية.</div></div>
+      ) : (
+        <div className="alert warn mb"><div>⚠ السياسة الحالية <b>مسودة</b> مستخرجة من مخطط يدوي، وقد تختلف عن اللائحة الرسمية لجامعتك. التطبيق أداة مساعدة ولا يُصدر قرارات أكاديمية.</div></div>
+      )}
 
       <div className="grid grid-2">
         <div className="card">
@@ -52,6 +54,12 @@ export function RegulationsPage() {
               {rows.map(([k, v]) => <tr key={k}><td style={{ width: "45%" }} className="muted">{k}</td><td>{v}</td></tr>)}
             </tbody>
           </table>
+          {policy.articlesAr && (
+            <div className="mt">
+              <h3>المواد المرجعية</h3>
+              <ul style={{ margin: 0, paddingInlineStart: "1.2rem" }} className="tiny">{policy.articlesAr.map((a, i) => <li key={i}>{a}</li>)}</ul>
+            </div>
+          )}
           <div className="row mt">
             <button className="btn" onClick={() => setShowJson(!showJson)}>{showJson ? "إخفاء" : "عرض"} تعريف السياسة (JSON)</button>
             <button className="btn" onClick={() => navigator.clipboard?.writeText(JSON.stringify(policy, null, 2))}>نسخ</button>

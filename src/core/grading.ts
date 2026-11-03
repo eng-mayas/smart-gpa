@@ -30,7 +30,7 @@ export const DEFAULT_SCALE: GradingScale = {
   nameAr: "سلّم الجامعات الخاصة السورية (4.00)",
   nameEn: "Syrian private universities (4.00)",
   maxPoints: 4,
-  percent: { multiplier: 20, offset: 20, noteAr: "النسبة المئوية = المعدل النقطي × 20 + 20" },
+  percent: { multiplier: 20, offset: 20, noteAr: "النسبة المئوية = المعدل النقطي × 20 + 20 (المادة 26/د من النظام الموحد)" },
   bands: [
     { min: 98, max: 100, letter: "A+", points: 4.0, pass: true },
     { min: 95, max: 97, letter: "A", points: 3.75, pass: true },
