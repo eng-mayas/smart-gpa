@@ -14,12 +14,12 @@ import { Disclaimer } from "./components/common";
 
 const ROUTES: { id: string; key: Key; icon: string }[] = [
   { id: "dashboard", key: "nav_dashboard", icon: "▦" },
+  { id: "history", key: "nav_history", icon: "🗓" },
   { id: "semester", key: "nav_semester", icon: "∑" },
   { id: "cumulative", key: "nav_cumulative", icon: "Σ" },
   { id: "predictor", key: "nav_predictor", icon: "◎" },
   { id: "exhaustion", key: "nav_exhaustion", icon: "🛟" },
   { id: "warnings", key: "nav_warnings", icon: "⚠" },
-  { id: "history", key: "nav_history", icon: "🗓" },
   { id: "regulations", key: "nav_regulations", icon: "§" },
   { id: "settings", key: "nav_settings", icon: "⚙" },
 ];
