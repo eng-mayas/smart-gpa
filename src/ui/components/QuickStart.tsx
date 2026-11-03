@@ -14,7 +14,8 @@ export function QuickStart({ onDone, go }: { onDone: () => void; go: (p: string)
   const [cgpa, setCgpa] = useState<number | "">("");
   const [hours, setHours] = useState<number | "">("");
   const [warnings, setWarnings] = useState<number | "">(0);
-  const ready = cgpa !== "" && hours !== "";
+  const ready = cgpa !== "" && hours !== "" && hours > 0;
+  const isNew = cgpa !== "" && hours === 0;
   const c = cgpa === "" ? 0 : cgpa, h = hours === "" ? 0 : hours, w = warnings === "" ? 0 : warnings;
   const st = stateFromProfile(w, h, Math.max(2, Math.round(h / 15)));
   const th = nextThresholds(st, policy, 0);
@@ -27,11 +28,12 @@ export function QuickStart({ onDone, go }: { onDone: () => void; go: (p: string)
     dispatch({ type: "profile", patch: { university: uni?.nameAr ?? (university === "other" ? "" : ""), previousCgpa: c, previousGpaHours: h, completedCredits: h, previousWarnings: w } });
     if (uni) dispatch({ type: "set", patch: { policyId: uni.policyId } });
     onDone();
-    go(safe ? "semester" : "exhaustion");
+    go(isNew || safe ? "semester" : "exhaustion");
   };
 
   return (
     <div className="card mb" style={{ borderInlineStart: "5px solid var(--gold)" }}>
+      <h2 style={{ marginBottom: "0.6rem" }}>مرحباً بك — أدخل بياناتك لتبدأ</h2>
       <div className="row between" style={{ alignItems: "flex-end" }}>
         <div className="row" style={{ flex: 1, alignItems: "flex-end" }}>
           <label className="field" style={{ minWidth: 220 }}>
@@ -47,8 +49,8 @@ export function QuickStart({ onDone, go }: { onDone: () => void; go: (p: string)
           <label className="field" style={{ width: 110 }}><span>الإنذارات</span><NumberInput value={warnings} min={0} max={3} onChange={setWarnings} /></label>
         </div>
         <div className="row">
-          <button className="btn primary" onClick={save} disabled={!ready}>ابدأ ببياناتي ←</button>
-          <button className="btn ghost sm" onClick={onDone}>تجاهل</button>
+          <button className="btn primary" onClick={save} disabled={!ready && !isNew}>ابدأ ←</button>
+          <button className="btn ghost sm" onClick={onDone}>لاحقاً</button>
         </div>
       </div>
       {ready ? (
@@ -62,7 +64,7 @@ export function QuickStart({ onDone, go }: { onDone: () => void; go: (p: string)
           </div>
         </div>
       ) : (
-        <p className="tiny mt" style={{ margin: 0 }}>🧪 الأرقام أدناه تجريبية للتعرف على التطبيق. أدخل معدلك وساعاتك ليحلّ مكانها فوراً — أو تجاهل واستكشف.</p>
+        <p className="tiny mt" style={{ margin: 0 }}>طالب جديد بلا معدل بعد؟ اكتب 0 في المعدل والساعات واضغط «ابدأ». ولتجربة التطبيق ببيانات جاهزة: الإعدادات ← «تحميل بيانات تجريبية».</p>
       )}
     </div>
   );

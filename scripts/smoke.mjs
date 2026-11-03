@@ -24,7 +24,9 @@ page.on("console", (m) => { if (m.type() === "error") errors.push(`console: ${m.
 // block external fonts to keep offline
 await page.route("**/fonts.googleapis.com/**", (r) => r.abort());
 // skip the first-run wizard so every page renders its normal content
-await page.addInitScript(() => { if (!localStorage.getItem("smart-gpa:v1")) localStorage.setItem("smart-gpa:v1", JSON.stringify({ version: 1, onboarded: true })); });
+// load the sample data set so every page renders content
+await page.goto("http://localhost:4173/#settings"); await page.waitForTimeout(300);
+await page.getByText("تحميل بيانات تجريبية").click(); await page.waitForTimeout(200);
 
 const routes = ["dashboard", "history", "plan", "progress", "semester", "cumulative", "predictor", "exhaustion", "warnings", "import", "regulations", "advisor", "settings"];
 for (const r of routes) {

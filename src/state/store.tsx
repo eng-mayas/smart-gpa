@@ -90,15 +90,18 @@ export const DEFAULT_PROFILE: Profile = {
   remainingCourses: 30,
 };
 
+export const EMPTY_PROFILE: Profile = { ...DEFAULT_PROFILE, university: "", faculty: "", major: "", planCredits: 0, previousCgpa: 0, previousGpaHours: 0, completedCredits: 0, previousWarnings: 0, remainingCourses: 0 };
+
+/** First run starts empty; the student enters their own data (sample data is available from Settings). */
 export const INITIAL_APP_STATE: AppState = {
   version: 1,
   theme: "light",
   lang: "ar",
   scaleId: "sy-private-4.0",
   policyId: "sy-private-unified-v1",
-  profile: DEFAULT_PROFILE,
-  courses: SAMPLE_COURSES,
-  history: SAMPLE_HISTORY,
+  profile: EMPTY_PROFILE,
+  courses: [],
+  history: [],
   savedScenarios: [],
   planId: null,
   customPlan: null,
@@ -107,7 +110,7 @@ export const INITIAL_APP_STATE: AppState = {
   components: {},
   advisorStudents: [],
   extractionEndpoint: "",
-  demo: true,
+  demo: false,
   onboarded: false,
   lastBackup: null,
 };
@@ -134,7 +137,7 @@ function load(): AppState {
     if (!raw) return INITIAL_APP_STATE;
     const parsed = JSON.parse(raw) as AppState;
     if (parsed.version !== 1) return INITIAL_APP_STATE;
-    const merged = { ...INITIAL_APP_STATE, ...parsed, profile: { ...DEFAULT_PROFILE, ...parsed.profile } };
+    const merged = { ...INITIAL_APP_STATE, ...parsed, profile: { ...EMPTY_PROFILE, ...parsed.profile } };
     // Migration: the hand-drawn draft was the only policy before the verified unified system was added.
     if (parsed.policyId === "sy-private-draft" && !("policyMigrated" in parsed)) merged.policyId = "sy-private-unified-v1";
     return merged;
@@ -146,9 +149,9 @@ function load(): AppState {
 function reducer(state: AppState, action: Action): AppState {
   const next = reduce(state, action);
   // Any real data entry ends demo mode; UI-only settings keep it.
-  if (action.type === "loadSample") return { ...next, demo: true };
-  if (action.type !== "set" && action.type !== "reset") return { ...next, demo: false };
-  if (action.type === "reset") return { ...next, demo: false, onboarded: true };
+  if (action.type === "loadSample") return { ...next, demo: true, onboarded: true };
+  if (action.type === "reset") return { ...next, demo: false, onboarded: false };
+  if (action.type !== "set") return { ...next, demo: false };
   return next;
 }
 
@@ -185,9 +188,9 @@ function reduce(state: AppState, action: Action): AppState {
     case "advisorStudents":
       return { ...state, advisorStudents: action.students };
     case "reset":
-      return { ...INITIAL_APP_STATE, courses: [], history: [], profile: { ...DEFAULT_PROFILE, name: "", major: "", previousCgpa: 0, previousGpaHours: 0, completedCredits: 0, previousWarnings: 0 }, theme: state.theme, lang: state.lang, scaleId: state.scaleId, policyId: state.policyId, extractionEndpoint: state.extractionEndpoint, onboarded: true };
+      return { ...INITIAL_APP_STATE, theme: state.theme, lang: state.lang, scaleId: state.scaleId, policyId: state.policyId, extractionEndpoint: state.extractionEndpoint };
     case "loadSample":
-      return { ...INITIAL_APP_STATE, theme: state.theme };
+      return { ...INITIAL_APP_STATE, theme: state.theme, lang: state.lang, profile: DEFAULT_PROFILE, courses: SAMPLE_COURSES, history: SAMPLE_HISTORY };
   }
 }
 

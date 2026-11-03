@@ -10,6 +10,7 @@ import { backupDue, exportBackup } from "../../state/backup";
 export function DashboardPage({ go }: { go: (p: string) => void }) {
   const { state, dispatch, scale, policy, semester, cumulative, currentState, predicted, timeline, historyHours } = useAcademic();
   const p = state.profile;
+  const isEmpty = p.previousGpaHours === 0 && state.history.length === 0 && state.courses.length === 0;
   const th = nextThresholds(currentState, policy, p.completedCredits);
   const reqSafe = requiredSemesterGpa({ previousCgpa: p.previousCgpa, previousGpaHours: p.previousGpaHours, semesterHours: semester.totalCredits, targetCgpa: th.safe });
   const creditsDone = p.completedCredits;
@@ -30,14 +31,14 @@ export function DashboardPage({ go }: { go: (p: string) => void }) {
 
   return (
     <>
-      {!state.onboarded && state.demo && <QuickStart onDone={() => dispatch({ type: "set", patch: { onboarded: true } })} go={go} />}
+      {!state.onboarded && isEmpty && <QuickStart onDone={() => dispatch({ type: "set", patch: { onboarded: true } })} go={go} />}
       {backupDue(state) && (
         <div className="alert info mb" style={{ alignItems: "center", justifyContent: "space-between" }}>
           <div>💾 بياناتك محفوظة في هذا المتصفح فقط. احفظ نسخة احتياطية حتى لا تخسرها عند تغيير الجهاز.</div>
           <button className="btn sm primary" onClick={() => { exportBackup(state); dispatch({ type: "set", patch: { lastBackup: new Date().toISOString() } }); }}>حفظ نسخة الآن</button>
         </div>
       )}
-      {state.demo && state.onboarded && (
+      {state.demo && (
         <div className="alert warn mb" style={{ alignItems: "center", justifyContent: "space-between" }}>
           <div>🧪 <b>هذه بيانات تجريبية</b> للتعرف على التطبيق وليست بياناتك. ابدأ بإدخال معدلك وفصولك، أو امسحها وابدأ من الصفر.</div>
           <div className="row">
@@ -51,7 +52,7 @@ export function DashboardPage({ go }: { go: (p: string) => void }) {
           <img className="hero-logo" src="./atmata-logo.png" alt="Atmata Group" />
           <div style={{ flex: 1 }}>
             <h1>مرحباً{p.name ? `، ${p.name}` : ""} 👋</h1>
-            <p className="muted">{p.university} · {p.faculty} · {p.major} · {p.academicYear}</p>
+            <p className="muted">{[p.university, p.faculty, p.major, p.academicYear].filter(Boolean).join(" · ") || "أكمل ملفك الأكاديمي من الإعدادات"}</p>
           </div>
           <div className="row">
             <StatusBadge status={currentState.status} lg />
