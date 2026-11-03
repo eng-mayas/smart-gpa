@@ -53,6 +53,10 @@ export interface AppState {
   extractionEndpoint: string;
   /** True while the preloaded demo data has not been touched */
   demo: boolean;
+  /** First-run flow dismissed */
+  onboarded: boolean;
+  /** ISO date of the last JSON export */
+  lastBackup: string | null;
 }
 
 export const SAMPLE_COURSES: Course[] = [
@@ -104,6 +108,8 @@ export const INITIAL_APP_STATE: AppState = {
   advisorStudents: [],
   extractionEndpoint: "",
   demo: true,
+  onboarded: false,
+  lastBackup: null,
 };
 
 type Action =
@@ -138,7 +144,8 @@ function reducer(state: AppState, action: Action): AppState {
   const next = reduce(state, action);
   // Any real data entry ends demo mode; UI-only settings keep it.
   if (action.type === "loadSample") return { ...next, demo: true };
-  if (action.type !== "set") return { ...next, demo: false };
+  if (action.type !== "set" && action.type !== "reset") return { ...next, demo: false };
+  if (action.type === "reset") return { ...next, demo: false, onboarded: true };
   return next;
 }
 
@@ -175,7 +182,7 @@ function reduce(state: AppState, action: Action): AppState {
     case "advisorStudents":
       return { ...state, advisorStudents: action.students };
     case "reset":
-      return { ...INITIAL_APP_STATE, courses: [], history: [], profile: { ...DEFAULT_PROFILE, previousCgpa: 0, previousGpaHours: 0, completedCredits: 0, previousWarnings: 0 }, theme: state.theme };
+      return { ...INITIAL_APP_STATE, courses: [], history: [], profile: { ...DEFAULT_PROFILE, name: "", major: "", previousCgpa: 0, previousGpaHours: 0, completedCredits: 0, previousWarnings: 0 }, theme: state.theme, lang: state.lang, scaleId: state.scaleId, policyId: state.policyId, extractionEndpoint: state.extractionEndpoint, onboarded: true };
     case "loadSample":
       return { ...INITIAL_APP_STATE, theme: state.theme };
   }

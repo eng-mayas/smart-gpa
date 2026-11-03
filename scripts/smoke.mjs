@@ -23,6 +23,8 @@ page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
 page.on("console", (m) => { if (m.type() === "error") errors.push(`console: ${m.text()}`); });
 // block external fonts to keep offline
 await page.route("**/fonts.googleapis.com/**", (r) => r.abort());
+// skip the first-run wizard so every page renders its normal content
+await page.addInitScript(() => { if (!localStorage.getItem("smart-gpa:v1")) localStorage.setItem("smart-gpa:v1", JSON.stringify({ version: 1, onboarded: true })); });
 
 const routes = ["dashboard", "history", "plan", "progress", "semester", "cumulative", "predictor", "exhaustion", "warnings", "import", "regulations", "advisor", "settings"];
 for (const r of routes) {

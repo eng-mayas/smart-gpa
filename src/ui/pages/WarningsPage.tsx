@@ -1,8 +1,8 @@
 import React from "react";
 import { useAcademic } from "../../state/useAcademic";
-import { StatusBadge, RiskBadge, Stat, RISK_LABEL, COLOR_VAR } from "../components/common";
+import { StatusBadge, RiskBadge, Stat, RISK_LABEL, COLOR_VAR, STATUS_HELP_AR } from "../components/common";
 import { fmtGpa } from "../../core/format";
-import { describeState, nextThresholds, riskLevel, STATUS_COLORS, transition } from "../../core/rules";
+import { AcademicStatus, describeState, nextThresholds, riskLevel, STATUS_COLORS, STATUS_LABELS_AR, transition } from "../../core/rules";
 import { requiredSemesterGpa } from "../../core/predictor";
 
 export function WarningsPage() {
@@ -120,6 +120,18 @@ export function WarningsPage() {
           </table>
         </div>
         <p className="tiny mt">* الحالات المعلَّمة بنجمة هي تفسير برمجي للسياسة وليست قراراً رسمياً.</p>
+      </div>
+      <div className="card mt">
+        <h3>ماذا تعني هذه المصطلحات؟</h3>
+        <div className="table-wrap">
+          <table>
+            <tbody>
+              {(Object.keys(STATUS_HELP_AR) as AcademicStatus[]).map((s) => (
+                <tr key={s}><td style={{ width: 220 }}><StatusBadge status={s} /></td><td className="tiny">{STATUS_HELP_AR[s]}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </>
   );

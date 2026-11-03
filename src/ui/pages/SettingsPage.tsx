@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { useStore } from "../../state/store";
 import { Field, NumberInput } from "../components/common";
+import { exportBackup } from "../../state/backup";
 
 export function SettingsPage() {
   const { state, dispatch } = useStore();
@@ -9,11 +10,8 @@ export function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const exportJson = () => {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "smart-gpa-profile.json";
-    a.click();
+    exportBackup(state);
+    dispatch({ type: "set", patch: { lastBackup: new Date().toISOString() } });
   };
   const importJson = (f: File) => {
     f.text().then((t) => {
@@ -87,12 +85,14 @@ export function SettingsPage() {
           <div className="card">
             <h2>البيانات</h2>
             <div className="row">
-              <button className="btn" onClick={exportJson}>⬇ تصدير JSON</button>
+              <button className="btn" onClick={exportJson}>⬇ نسخة احتياطية (JSON)</button>
               <button className="btn" onClick={() => fileRef.current?.click()}>⬆ استيراد JSON</button>
               <input ref={fileRef} type="file" accept="application/json" hidden onChange={(e) => e.target.files?.[0] && importJson(e.target.files[0])} />
               <button className="btn" onClick={() => dispatch({ type: "loadSample" })}>تحميل بيانات تجريبية</button>
               <button className="btn danger" onClick={() => confirm("سيتم مسح كل البيانات المحلية. متابعة؟") && dispatch({ type: "reset" })}>مسح الكل</button>
+              <button className="btn" onClick={() => dispatch({ type: "set", patch: { onboarded: false } })}>إعادة تشغيل البداية السريعة</button>
             </div>
+            <p className="tiny mt">{state.lastBackup ? `آخر نسخة احتياطية: ${new Date(state.lastBackup).toLocaleDateString("ar-SY")}` : "لم تُحفظ نسخة احتياطية بعد."} البيانات محفوظة في هذا المتصفح فقط؛ إن غيّرت الجهاز أو مسحت المتصفح تحتاج هذا الملف لاستعادتها.</p>
             <p className="tiny mt">طبقة التخزين معزولة في <span className="kbd">src/state/store.tsx</span> ويمكن استبدالها بـ Supabase لحفظ الملفات سحابياً.</p>
           </div>
         </div>

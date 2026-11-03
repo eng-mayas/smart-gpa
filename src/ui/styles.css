@@ -102,6 +102,7 @@ small, .muted { color: var(--text-2); }
   display: flex; align-items: center; gap: 0.6rem;
   padding: 0.55rem 0.7rem; border-radius: 10px; color: var(--text-2); font-weight: 600; font-size: 0.93rem;
 }
+.nav-group { font-size: 0.7rem; font-weight: 700; color: var(--text-3); letter-spacing: 0.04em; padding: 0.7rem 0.7rem 0.2rem; text-transform: uppercase; }
 .nav a:hover { background: var(--bg-soft); color: var(--text); }
 .nav a.active { background: var(--primary-soft); color: var(--primary); }
 .nav a .ic { width: 22px; text-align: center; font-size: 1rem; }

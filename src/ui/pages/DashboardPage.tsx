@@ -4,6 +4,8 @@ import { Gauge, Stat, StatusBadge, RiskBadge, Progress, LineChart, BarChart, RIS
 import { fmtGpa, fmtPct, gpaToPct } from "../../core/format";
 import { describeState, nextThresholds, riskLevel, STATUS_COLORS } from "../../core/rules";
 import { requiredSemesterGpa } from "../../core/predictor";
+import { Onboarding } from "../components/Onboarding";
+import { backupDue, exportBackup } from "../../state/backup";
 
 export function DashboardPage({ go }: { go: (p: string) => void }) {
   const { state, dispatch, scale, policy, semester, cumulative, currentState, predicted, timeline, historyHours } = useAcademic();
@@ -26,13 +28,28 @@ export function DashboardPage({ go }: { go: (p: string) => void }) {
 
   const hist = timeline.length > 0;
 
+  if (!state.onboarded) {
+    return (
+      <>
+        <Onboarding onDone={() => dispatch({ type: "set", patch: { onboarded: true } })} go={go} />
+        <p className="tiny" style={{ textAlign: "center" }}>بعد الحفظ تظهر الرئيسية بمؤشراتك.</p>
+      </>
+    );
+  }
+
   return (
     <>
-      {state.demo && (
+      {backupDue(state) && (
+        <div className="alert info mb" style={{ alignItems: "center", justifyContent: "space-between" }}>
+          <div>💾 بياناتك محفوظة في هذا المتصفح فقط. احفظ نسخة احتياطية حتى لا تخسرها عند تغيير الجهاز.</div>
+          <button className="btn sm primary" onClick={() => { exportBackup(state); dispatch({ type: "set", patch: { lastBackup: new Date().toISOString() } }); }}>حفظ نسخة الآن</button>
+        </div>
+      )}
+      {state.demo && state.onboarded && (
         <div className="alert warn mb" style={{ alignItems: "center", justifyContent: "space-between" }}>
           <div>🧪 <b>هذه بيانات تجريبية</b> للتعرف على التطبيق وليست بياناتك. ابدأ بإدخال معدلك وفصولك، أو امسحها وابدأ من الصفر.</div>
           <div className="row">
-            <button className="btn sm primary" onClick={() => go("settings")}>إدخال بياناتي</button>
+            <button className="btn sm primary" onClick={() => dispatch({ type: "set", patch: { onboarded: false } })}>إدخال بياناتي</button>
             <button className="btn sm" onClick={() => dispatch({ type: "reset" })}>مسح البيانات التجريبية</button>
           </div>
         </div>

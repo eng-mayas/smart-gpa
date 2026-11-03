@@ -16,8 +16,20 @@ export const COLOR_VAR: Record<string, string> = {
   green: "var(--green)", yellow: "var(--yellow)", orange: "var(--orange)", red: "var(--red)", gray: "var(--gray)", blue: "var(--primary)", teal: "var(--teal)",
 };
 
+export const STATUS_HELP_AR: Record<AcademicStatus, string> = {
+  not_evaluated: "لم يبدأ احتساب المعدل التراكمي بعد (عادةً قبل نهاية الفصل الثاني).",
+  good: "معدلك التراكمي عند حد الوضع السليم أو أعلى. لا إنذار فعّال.",
+  warning_1: "أول تنبيه رسمي: معدلك دون حد الوضع السليم. لديك فصل لرفعه قبل الإنذار الثاني.",
+  warning_2: "التنبيه الأخير: الفصل القادم يحدد إن كنت ستُمنح فصولاً استدراكية أو تُفصل.",
+  remedial_short: "فرصة من فصل واحد لأن معدلك بين حد الفصل وحد التعافي؛ يجب رفعه فوق حد التعافي.",
+  remedial_long: "فصلان إضافيان للوصول إلى الوضع السليم قبل الفصل من الجامعة.",
+  exception: "فصول إضافية استثنائية لمن أنهى معظم خطته بمعدل مقبول.",
+  dismissed_specialization: "وفق السياسة: الفصل من التخصص (قد يُسمح بالانتقال لتخصص آخر). ليس قراراً رسمياً.",
+  dismissed_university: "وفق السياسة: الفصل من الجامعة. ليس قراراً رسمياً — راجع شؤون الطلاب.",
+};
+
 export function StatusBadge({ status, lg }: { status: AcademicStatus; lg?: boolean }) {
-  return <span className={`badge ${STATUS_COLORS[status]} ${lg ? "lg" : ""}`}>{STATUS_LABELS_AR[status]}</span>;
+  return <span className={`badge ${STATUS_COLORS[status]} ${lg ? "lg" : ""}`} title={STATUS_HELP_AR[status]} style={{ cursor: "help" }}>{STATUS_LABELS_AR[status]}</span>;
 }
 
 export const RISK_LABEL: Record<RiskLevel, string> = { none: "غير محدد", low: "منخفض", medium: "متوسط", high: "مرتفع", critical: "حرج" };

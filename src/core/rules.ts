@@ -162,6 +162,8 @@ export function isTerminal(status: AcademicStatus): boolean {
 }
 
 const f = (n: number) => n.toFixed(2);
+/** Arabic phrase for N semesters */
+const sems = (n: number) => (n === 1 ? "فصلاً واحداً" : n === 2 ? "فصلين" : `${n} فصول`);
 
 /** Apply one end-of-semester evaluation. `completedCredits` is used for exceptional provisions. */
 export function transition(
@@ -237,7 +239,7 @@ export function transition(
       if (cgpa >= U) {
         return base(
           { status: "remedial_long", remaining: policy.shortToLongSemesters },
-          `ارتفع المعدل إلى ${f(cgpa)} (≥ ${f(U)}): يُمنح ${policy.shortToLongSemesters} فصل استدراكي إضافي للوصول إلى ${f(G)}.`,
+          `ارتفع المعدل إلى ${f(cgpa)} (≥ ${f(U)}): يُمنح ${sems(policy.shortToLongSemesters)} استدراكياً إضافياً للوصول إلى ${f(G)}.`,
         );
       }
       return base(
@@ -274,7 +276,7 @@ export function transition(
     if (cgpa! >= U) {
       return base(
         { status: "remedial_long", remaining: policy.longRemedialSemesters },
-        `بعد الإنذار النهائي، المعدل ${f(cgpa!)} ≥ ${f(U)}: يُمنح ${policy.longRemedialSemesters} فصلان استدراكيان للوصول إلى ${f(G)}.`,
+        `بعد الإنذار النهائي، المعدل ${f(cgpa!)} ≥ ${f(U)}: يُمنح ${sems(policy.longRemedialSemesters)} استدراكية للوصول إلى ${f(G)}.`,
       );
     }
     return base(
@@ -288,7 +290,7 @@ export function transition(
     if (ex && !state.exceptionUsed && completedCredits >= ex.minCompletedCredits && cgpa! >= ex.minCgpa) {
       return base(
         { status: "exception", remaining: ex.extraSemesters, exceptionUsed: true },
-        `انتهت الفصول الاستدراكية، لكن ينطبق الاستثناء (${ex.minCompletedCredits} ساعة ومعدل ≥ ${f(ex.minCgpa)}): يُمنح ${ex.extraSemesters} فصلان إضافيان.`,
+        `انتهت الفصول الاستدراكية، لكن ينطبق الاستثناء (${ex.minCompletedCredits} ساعة ومعدل ≥ ${f(ex.minCgpa)}): يُمنح ${sems(ex.extraSemesters)} إضافية.`,
       );
     }
     return base(
@@ -390,7 +392,7 @@ export function describeState(state: AcademicState, policy: AcademicPolicy): str
     case "warning_1":
       return `إنذار أول. إذا بقي المعدل دون ${f(policy.goodStandingMin)} في الفصل القادم ستحصل على إنذار ثانٍ، وإذا انخفض دون ${f(policy.specializationDismissalBelow)} تنص السياسة على الفصل من التخصص.`;
     case "warning_2":
-      return `إنذار ثانٍ (نهائي). الفصل القادم حاسم: معدل ≥ ${f(policy.goodStandingMin)} يرفع الإنذار، بين ${f(policy.upperRecoveryMin)} و${f(policy.goodStandingMin)} يمنح ${policy.longRemedialSemesters} فصلين استدراكيين، بين ${f(policy.specializationDismissalBelow)} و${f(policy.upperRecoveryMin)} فصلاً استدراكياً واحداً فقط.`;
+      return `إنذار ثانٍ (نهائي). الفصل القادم حاسم: معدل ≥ ${f(policy.goodStandingMin)} يرفع الإنذار، بين ${f(policy.upperRecoveryMin)} و${f(policy.goodStandingMin)} يمنح ${sems(policy.longRemedialSemesters)} استدراكية، بين ${f(policy.specializationDismissalBelow)} و${f(policy.upperRecoveryMin)} ${sems(policy.shortRemedialSemesters)} استدراكياً فقط.`;
     case "remedial_short":
       return `فصل استدراكي واحد. يجب رفع المعدل إلى ${f(policy.upperRecoveryMin)} على الأقل للحصول على فرصة إضافية، أو إلى ${f(policy.goodStandingMin)} لرفع الإنذار نهائياً.`;
     case "remedial_long":

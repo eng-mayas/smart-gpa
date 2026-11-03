@@ -15,6 +15,15 @@ import { ProgressPage } from "./pages/ProgressPage";
 import { ImportPage } from "./pages/ImportPage";
 import { AdvisorPage } from "./pages/AdvisorPage";
 import { Disclaimer } from "./components/common";
+import { exportBackup } from "../state/backup";
+
+const GROUPS: { titleAr: string; titleEn: string; ids: string[] }[] = [
+  { titleAr: "", titleEn: "", ids: ["dashboard"] },
+  { titleAr: "الحساب", titleEn: "Calculate", ids: ["semester", "cumulative", "progress"] },
+  { titleAr: "التخطيط", titleEn: "Plan", ids: ["plan", "predictor", "exhaustion", "warnings"] },
+  { titleAr: "بياناتي", titleEn: "My data", ids: ["history", "import", "regulations", "settings"] },
+  { titleAr: "للجامعات", titleEn: "For universities", ids: ["advisor"] },
+];
 
 const ROUTES: { id: string; key: Key; icon: string }[] = [
   { id: "dashboard", key: "nav_dashboard", icon: "▦" },
@@ -77,14 +86,20 @@ export function App() {
           <div><b>{t("appName")}</b><small>{t("brandSub")}</small></div>
         </div>
         <nav className="nav stack" style={{ gap: 2 }}>
-          {ROUTES.map((r) => (
-            <a key={r.id} href={`#${r.id}`} className={route === r.id ? "active" : ""}>
-              <span className="ic">{r.icon}</span>{t(r.key)}
-            </a>
+          {GROUPS.map((g) => (
+            <React.Fragment key={g.titleEn || "home"}>
+              {g.titleAr && <div className="nav-group">{state.lang === "ar" ? g.titleAr : g.titleEn}</div>}
+              {g.ids.map((id) => ROUTES.find((r) => r.id === id)!).map((r) => (
+                <a key={r.id} href={`#${r.id}`} className={route === r.id ? "active" : ""}>
+                  <span className="ic">{r.icon}</span>{t(r.key)}
+                </a>
+              ))}
+            </React.Fragment>
           ))}
         </nav>
         <div className="spacer" />
         <div className="row" style={{ padding: "0 0.4rem" }}>
+          <button className="btn sm" title="تنزيل نسخة احتياطية من بياناتك" onClick={() => { exportBackup(state); dispatch({ type: "set", patch: { lastBackup: new Date().toISOString() } }); }}>💾</button>
           <button className="btn sm" onClick={() => dispatch({ type: "set", patch: { theme: state.theme === "light" ? "dark" : "light" } })}>
             {state.theme === "light" ? "🌙 " + t("theme_dark") : "☀ " + t("theme_light")}
           </button>

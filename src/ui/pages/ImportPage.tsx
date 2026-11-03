@@ -21,6 +21,27 @@ async function loadTesseract(): Promise<NonNullable<Window["Tesseract"]>> {
   return window.Tesseract!;
 }
 
+/** Upscale, grayscale and stretch contrast so OCR reads scanned tables better. */
+async function preprocessImage(f: File): Promise<string> {
+  const url = URL.createObjectURL(f);
+  const img = await new Promise<HTMLImageElement>((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+  const scale = Math.min(2.5, Math.max(1, 2000 / Math.max(img.width, img.height)));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(img.width * scale); canvas.height = Math.round(img.height * scale);
+  const ctx = canvas.getContext("2d")!;
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  const d = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const px = d.data;
+  let min = 255, max = 0;
+  for (let i = 0; i < px.length; i += 4) { const g = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]; px[i] = g; if (g < min) min = g; if (g > max) max = g; }
+  const range = Math.max(1, max - min);
+  for (let i = 0; i < px.length; i += 4) { const g = Math.max(0, Math.min(255, ((px[i] - min) / range) * 255 * 1.1 - 10)); px[i] = px[i + 1] = px[i + 2] = g; }
+  ctx.putImageData(d, 0, 0);
+  URL.revokeObjectURL(url);
+  return canvas.toDataURL("image/png");
+}
+
 function fileToBase64(f: File): Promise<string> {
   return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(f); });
 }
@@ -56,7 +77,8 @@ export function ImportPage({ go }: { go: (p: string) => void }) {
     try {
       const T = await loadTesseract();
       setBusy("جارٍ قراءة الصورة…");
-      const { data } = await T.recognize(f, "ara+eng");
+      const prepared = await preprocessImage(f);
+      const { data } = await T.recognize(prepared, "ara+eng");
       setText(data.text);
       analyze(data.text);
     } catch (e) {
