@@ -10,17 +10,25 @@ import { WarningsPage } from "./pages/WarningsPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { RegulationsPage } from "./pages/RegulationsPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { PlanPage } from "./pages/PlanPage";
+import { ProgressPage } from "./pages/ProgressPage";
+import { ImportPage } from "./pages/ImportPage";
+import { AdvisorPage } from "./pages/AdvisorPage";
 import { Disclaimer } from "./components/common";
 
 const ROUTES: { id: string; key: Key; icon: string }[] = [
   { id: "dashboard", key: "nav_dashboard", icon: "▦" },
   { id: "history", key: "nav_history", icon: "🗓" },
+  { id: "plan", key: "nav_plan", icon: "🎓" },
+  { id: "progress", key: "nav_progress", icon: "📈" },
   { id: "semester", key: "nav_semester", icon: "∑" },
   { id: "cumulative", key: "nav_cumulative", icon: "Σ" },
   { id: "predictor", key: "nav_predictor", icon: "◎" },
   { id: "exhaustion", key: "nav_exhaustion", icon: "🛟" },
   { id: "warnings", key: "nav_warnings", icon: "⚠" },
+  { id: "import", key: "nav_import", icon: "📷" },
   { id: "regulations", key: "nav_regulations", icon: "§" },
+  { id: "advisor", key: "nav_advisor", icon: "🏫" },
   { id: "settings", key: "nav_settings", icon: "⚙" },
 ];
 
@@ -52,6 +60,10 @@ export function App() {
       case "history": return <HistoryPage />;
       case "regulations": return <RegulationsPage />;
       case "settings": return <SettingsPage />;
+      case "plan": return <PlanPage go={go} />;
+      case "progress": return <ProgressPage go={go} />;
+      case "import": return <ImportPage go={go} />;
+      case "advisor": return <AdvisorPage />;
       default: return <DashboardPage go={go} />;
     }
   })();

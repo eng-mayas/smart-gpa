@@ -1,0 +1,90 @@
+import { StudyPlan } from "../plan";
+
+/**
+ * International University for Science & Technology (IUST) — Computer Engineering (Bachelor).
+ * Extracted by OCR from the official "Course Description" document (printed 2021).
+ * Where the prerequisite line was not legible in the scan, a prerequisite was inferred from the course
+ * sequence (e.g. labs ↔ their theory course) or left empty — verify every prerequisite against the official plan.
+ * Level = 4th digit of the course code (1 = first year … 5 = fifth year).
+ */
+export const IUST_COMPUTER_ENGINEERING: StudyPlan = {
+  id: "iust-ce-2021",
+  universityAr: "الجامعة الدولية الخاصة للعلوم والتكنولوجيا (IUST)",
+  universityEn: "International University for Science & Technology",
+  majorAr: "هندسة الحاسوب",
+  majorEn: "Computer Engineering",
+  degree: "بكالوريوس",
+  /** Sum of the extracted courses; the official total may include extra electives. */
+  totalCredits: 158,
+  verification: "draft",
+  sourceRef: "وصف المقررات الرسمي (Course Description) — مسح ضوئي 2021. استخراج آلي: بعض المتطلبات السابقة مستنتجة من تسلسل المقررات ويجب تدقيقها.",
+  courses: [
+    // University requirements
+    { code: "401101", name: "Computer Skills (1)", nameAr: "مهارات حاسوب (1)", credits: 3, prereqs: [], type: "university" },
+    { code: "401203", name: "Computer Skills (2) for Eng. & IT", nameAr: "مهارات حاسوب (2)", credits: 3, prereqs: ["401101"], type: "university" },
+    { code: "604101", name: "English Skills (1)", nameAr: "مهارات لغة إنكليزية (1)", credits: 3, prereqs: [], type: "university" },
+    { code: "604102", name: "English Skills (2)", nameAr: "مهارات لغة إنكليزية (2)", credits: 3, prereqs: ["604101"], type: "university" },
+    { code: "603101", name: "Arabic Skills (1)", nameAr: "مهارات لغة عربية (1)", credits: 3, prereqs: [], type: "university" },
+    { code: "608100", name: "Sociology", nameAr: "علم الاجتماع", credits: 3, prereqs: [], type: "university" },
+    { code: "608101", name: "Environment & Society", nameAr: "البيئة والمجتمع", credits: 3, prereqs: [], type: "university" },
+    { code: "608103", name: "Principles of Psychology", nameAr: "مبادئ علم النفس", credits: 3, prereqs: [], type: "university" },
+    // Basic sciences
+    { code: "601101", name: "Calculus (1)", nameAr: "تفاضل وتكامل (1)", credits: 3, prereqs: [], type: "core" },
+    { code: "601102", name: "Calculus (2)", nameAr: "تفاضل وتكامل (2)", credits: 3, prereqs: ["601101"], type: "core" },
+    { code: "601103", name: "General Physics (1)", nameAr: "فيزياء عامة (1)", credits: 3, prereqs: [], type: "core" },
+    { code: "601104", name: "General Physics (2)", nameAr: "فيزياء عامة (2)", credits: 3, prereqs: ["601103"], type: "core" },
+    { code: "601107", name: "General Physics (1) Lab", nameAr: "مخبر فيزياء (1)", credits: 1, prereqs: [], coreqs: ["601103"], type: "core" },
+    { code: "601108", name: "General Physics (2) Lab", nameAr: "مخبر فيزياء (2)", credits: 1, prereqs: ["601107"], coreqs: ["601104"], type: "core" },
+    { code: "602101", name: "General Chemistry for Engineering", nameAr: "كيمياء عامة للهندسة", credits: 3, prereqs: [], type: "core" },
+    { code: "602107", name: "General Chemistry Lab", nameAr: "مخبر كيمياء عامة", credits: 1, prereqs: [], coreqs: ["602101"], type: "core" },
+    // Faculty requirements
+    { code: "301101", name: "Introduction to Engineering", nameAr: "مدخل إلى الهندسة", credits: 1, prereqs: [], type: "core" },
+    { code: "304132", name: "Engineering Drawing", nameAr: "رسم هندسي", credits: 2, prereqs: ["401101"], type: "core" },
+    { code: "304211", name: "Workshop (2)", nameAr: "ورشة (2)", credits: 1, prereqs: [], type: "core" },
+    { code: "304222", name: "Engineering Mechanics", nameAr: "ميكانيك هندسي", credits: 3, prereqs: [], type: "core" },
+    { code: "304361", name: "Engineering Economics", nameAr: "اقتصاد هندسي", credits: 2, prereqs: [], type: "core" },
+    { code: "301201", name: "Engineering Analysis (1)", nameAr: "تحليل هندسي (1)", credits: 3, prereqs: ["601102"], type: "core" },
+    { code: "301203", name: "Technical English", nameAr: "لغة إنكليزية تقنية", credits: 2, prereqs: ["604102"], type: "core" },
+    { code: "301213", name: "Electrical Circuits (for non EE)", nameAr: "دارات كهربائية", credits: 3, prereqs: ["601104"], type: "core" },
+    { code: "301216", name: "Electrical Circuits Lab (for non EE)", nameAr: "مخبر دارات كهربائية", credits: 1, prereqs: ["301213"], type: "core" },
+    { code: "301222", name: "Electronics (1)", nameAr: "إلكترونيات (1)", credits: 3, prereqs: ["301213"], type: "core" },
+    { code: "301227", name: "Electronics Lab (for non EE)", nameAr: "مخبر إلكترونيات", credits: 1, prereqs: ["301222"], type: "core" },
+    { code: "301232", name: "Electromagnetics (1)", nameAr: "كهرومغناطيسية (1)", credits: 3, prereqs: ["601104"], type: "core" },
+    { code: "301301", name: "Signals & Systems Analysis", nameAr: "تحليل الإشارات والنظم", credits: 3, prereqs: ["301201"], type: "core" },
+    { code: "301302", name: "Numerical Analysis", nameAr: "تحليل عددي", credits: 3, prereqs: ["301201"], type: "core" },
+    { code: "301303", name: "Probability & Random Signals", nameAr: "احتمالات وإشارات عشوائية", credits: 2, prereqs: ["601102"], type: "core" },
+    { code: "301322", name: "Digital Electronics", nameAr: "إلكترونيات رقمية", credits: 3, prereqs: ["301222", "302241"], type: "core" },
+    { code: "301328", name: "Digital Electronics Lab", nameAr: "مخبر إلكترونيات رقمية", credits: 1, prereqs: [], coreqs: ["301322"], type: "core" },
+    { code: "301443", name: "Analog & Digital Communications", nameAr: "اتصالات تماثلية ورقمية", credits: 3, prereqs: ["301301"], type: "core" },
+    { code: "301446", name: "Communication Lab (for non EE)", nameAr: "مخبر اتصالات", credits: 1, prereqs: ["301443"], type: "core" },
+    { code: "301444", name: "Digital Signal Processing", nameAr: "معالجة الإشارة الرقمية", credits: 3, prereqs: ["301301"], type: "core" },
+    { code: "301451", name: "Control Systems", nameAr: "نظم التحكم", credits: 3, prereqs: ["301301"], type: "core" },
+    { code: "301461", name: "Drive Systems", nameAr: "نظم القيادة", credits: 3, prereqs: [], type: "elective" },
+    // Department requirements
+    { code: "302202", name: "Discrete Mathematics", nameAr: "رياضيات متقطعة", credits: 3, prereqs: ["601102"], type: "core" },
+    { code: "302211", name: "Object Oriented Programming", nameAr: "برمجة غرضية التوجه", credits: 3, prereqs: ["401203"], type: "core" },
+    { code: "302212", name: "Data Structures & Algorithms", nameAr: "بنى المعطيات والخوارزميات", credits: 3, prereqs: ["302211"], type: "core" },
+    { code: "302241", name: "Digital Logic", nameAr: "منطق رقمي", credits: 3, prereqs: ["601104"], type: "core" },
+    { code: "302248", name: "Digital Logic Lab", nameAr: "مخبر منطق رقمي", credits: 1, prereqs: ["302241"], type: "core" },
+    { code: "302311", name: "Web Publishing", nameAr: "نشر على الويب", credits: 1, prereqs: ["401203"], type: "core" },
+    { code: "302312", name: "Software Engineering", nameAr: "هندسة البرمجيات", credits: 3, prereqs: ["302212"], type: "core" },
+    { code: "302318", name: "Software Lab", nameAr: "مخبر برمجيات", credits: 1, prereqs: [], coreqs: ["302312"], type: "core" },
+    { code: "302321", name: "Database Systems", nameAr: "نظم قواعد البيانات", credits: 3, prereqs: ["302212"], type: "core" },
+    { code: "302341", name: "Microprocessor", nameAr: "معالجات صغرية", credits: 3, prereqs: ["302241"], type: "core" },
+    { code: "302347", name: "Microprocessor Lab", nameAr: "مخبر معالجات صغرية", credits: 1, prereqs: [], coreqs: ["302341"], type: "core" },
+    { code: "302342", name: "Computer Architecture", nameAr: "بنيان الحاسوب", credits: 3, prereqs: ["302341"], type: "core" },
+    { code: "302412", name: "Visual Programming", nameAr: "برمجة مرئية", credits: 3, prereqs: ["302211"], type: "core" },
+    { code: "302432", name: "Computer Networks", nameAr: "شبكات حاسوبية", credits: 3, prereqs: ["302342"], type: "core" },
+    { code: "302442", name: "Microcomputers", nameAr: "حواسيب صغرية", credits: 3, prereqs: ["302341"], type: "core" },
+    { code: "302461", name: "Operating Systems", nameAr: "نظم التشغيل", credits: 3, prereqs: ["302342"], type: "core" },
+    { code: "302501", name: "Real-time Systems", nameAr: "نظم الزمن الحقيقي", credits: 3, prereqs: ["302442"], type: "core" },
+    { code: "302502", name: "Digital Image Processing", nameAr: "معالجة الصور الرقمية", credits: 3, prereqs: ["301444"], type: "core" },
+    { code: "302511", name: "Advanced Programming Language", nameAr: "لغة برمجة متقدمة", credits: 3, prereqs: ["302211"], type: "elective" },
+    { code: "302531", name: "Networks Design & Management", nameAr: "تصميم وإدارة الشبكات", credits: 3, prereqs: ["302432"], type: "elective" },
+    { code: "302532", name: "Advanced Computer Networks", nameAr: "شبكات حاسوبية متقدمة", credits: 3, prereqs: ["302432"], type: "core" },
+    { code: "302541", name: "Embedded Systems", nameAr: "نظم مضمّنة", credits: 3, prereqs: ["302442"], type: "core" },
+    { code: "302552", name: "Introduction to Robotics", nameAr: "مدخل إلى الروبوتات", credits: 3, prereqs: ["301451"], type: "elective" },
+    { code: "302591", name: "Graduation Project (1)", nameAr: "مشروع تخرج (1)", credits: 2, prereqs: [], type: "core", note: "بقرار من القسم" },
+    { code: "302592", name: "Graduation Project (2)", nameAr: "مشروع تخرج (2)", credits: 3, prereqs: ["302591"], type: "core" },
+  ],
+};

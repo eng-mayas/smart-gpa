@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useAcademic } from "../../state/useAcademic";
+import { BUILTIN_PLANS } from "../../core/plan";
 import { Field, NumberInput, StatusBadge, RiskBadge, BarChart } from "../components/common";
 import { fmtGpa } from "../../core/format";
 import { courseImpact, minimumGradesForTarget, requiredSemesterGpa, runScenario, standardScenarios, hoursNeededAtGpa } from "../../core/predictor";
@@ -17,6 +18,7 @@ const STATUS_OPTIONS: { value: AcademicStatus; label: string }[] = [
 
 export function ExhaustionPage() {
   const { state, dispatch, scale, semester, policy, currentState } = useAcademic();
+  const activePlan = state.planId === "custom" ? state.customPlan : BUILTIN_PLANS.find((p) => p.id === state.planId) ?? null;
   const p = state.profile;
   const setP = (patch: Partial<typeof p>) => dispatch({ type: "profile", patch });
 
@@ -126,7 +128,7 @@ export function ExhaustionPage() {
 
       <div className="card">
         <div className="card-head"><h2>مقررات الفصل المسجّل والعلامات المتوقعة</h2></div>
-        <CourseTable courses={state.courses} onChange={(c) => dispatch({ type: "courses", courses: c })} result={semester} scale={scale} showWeighted={false} />
+        <CourseTable courses={state.courses} onChange={(c) => dispatch({ type: "courses", courses: c })} result={semester} scale={scale} planCourses={activePlan?.courses} showWeighted={false} />
       </div>
 
       <div className="grid grid-2 mt">

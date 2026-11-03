@@ -3,6 +3,7 @@ import { Course, CourseStatus, SemesterResult, newCourse, isValidCredits } from 
 import { GradingScale, isValidMark } from "../../core/grading";
 import { fmtGpa } from "../../core/format";
 import { NumberInput } from "./common";
+import { PlanCourse, courseLabel } from "../../core/plan";
 
 const STATUS_LABEL: Record<CourseStatus, string> = {
   normal: "عادي",
@@ -13,13 +14,15 @@ const STATUS_LABEL: Record<CourseStatus, string> = {
 };
 
 export function CourseTable({
-  courses, onChange, result, scale, showWeighted = true,
+  courses, onChange, result, scale, showWeighted = true, planCourses,
 }: {
   courses: Course[];
   onChange: (c: Course[]) => void;
   result: SemesterResult;
   scale: GradingScale;
   showWeighted?: boolean;
+  /** Courses of the active study plan, for quick picking */
+  planCourses?: PlanCourse[];
 }) {
   const update = (id: string, patch: Partial<Course>) => onChange(courses.map((c) => (c.id === id ? { ...c, ...patch } : c)));
   const remove = (id: string) => onChange(courses.filter((c) => c.id !== id));
@@ -52,8 +55,16 @@ export function CourseTable({
               return (
                 <tr key={c.id}>
                   <td>
-                    <input className="input" value={c.name} placeholder="اسم المقرر" aria-label="اسم المقرر"
-                      onChange={(e) => update(c.id, { name: e.target.value })} />
+                    <input className="input" value={c.name} placeholder="اسم المقرر" aria-label="اسم المقرر" list={planCourses?.length ? `plan-courses-${c.id}` : undefined}
+                      onChange={(e) => {
+                        const pick = planCourses?.find((p) => courseLabel(p) === e.target.value || p.code === e.target.value);
+                        update(c.id, pick ? { name: pick.nameAr ?? pick.name, credits: pick.credits } : { name: e.target.value });
+                      }} />
+                    {planCourses?.length ? (
+                      <datalist id={`plan-courses-${c.id}`}>
+                        {planCourses.map((p) => <option key={p.code} value={courseLabel(p)}>{p.code} · {p.credits} ساعة</option>)}
+                      </datalist>
+                    ) : null}
                   </td>
                   <td className="c" style={{ width: 90 }}>
                     <NumberInput value={c.credits} min={0} max={30} step={0.5} ariaLabel="الساعات المعتمدة" invalid={!isValidCredits(c.credits)}

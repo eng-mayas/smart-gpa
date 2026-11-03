@@ -24,7 +24,7 @@ page.on("console", (m) => { if (m.type() === "error") errors.push(`console: ${m.
 // block external fonts to keep offline
 await page.route("**/fonts.googleapis.com/**", (r) => r.abort());
 
-const routes = ["dashboard", "semester", "cumulative", "predictor", "exhaustion", "warnings", "history", "regulations", "settings"];
+const routes = ["dashboard", "history", "plan", "progress", "semester", "cumulative", "predictor", "exhaustion", "warnings", "import", "regulations", "advisor", "settings"];
 for (const r of routes) {
   await page.goto(`http://localhost:4173/#${r}`);
   await page.waitForTimeout(400);
@@ -41,6 +41,39 @@ await firstMark.fill("99");
 await page.waitForTimeout(200);
 const after = await page.locator(".stat .value").first().textContent();
 console.log("GPA before/after editing first mark:", before, "→", after);
+// plan flow: choose built-in plan, mark a course done, check suggestion renders
+await page.goto("http://localhost:4173/#plan");
+await page.waitForTimeout(300);
+await page.locator("select.input").first().selectOption({ index: 1 });
+await page.waitForTimeout(300);
+const planText = await page.locator("main").textContent();
+console.log("plan loaded:", planText.includes("اقتراح تسجيل") && planText.includes("158"));
+await page.locator("tbody select.input").first().selectOption("done");
+await page.waitForTimeout(200);
+await page.screenshot({ path: "shots/plan.png", fullPage: true });
+// progress page: enter a quiz score and check needed-final table
+await page.goto("http://localhost:4173/#progress");
+await page.waitForTimeout(300);
+const scoreInput = page.locator('input[placeholder="—"]').first();
+await scoreInput.fill("12");
+await page.waitForTimeout(200);
+const prog = await page.locator("main").textContent();
+console.log("progress needed table:", prog.includes("ماذا أحتاج") && prog.includes("%"));
+await page.screenshot({ path: "shots/progress.png", fullPage: true });
+// import: paste text
+await page.goto("http://localhost:4173/#import");
+await page.waitForTimeout(300);
+await page.locator("textarea").first().fill("301201 | تحليل هندسي (1) | 3 | 72\nCalculus (2)\t3\t88\tB+");
+await page.locator("button.btn.primary").first().click();
+await page.waitForTimeout(200);
+console.log("import rows:", await page.locator("tbody tr").count());
+// advisor: sample data
+await page.goto("http://localhost:4173/#advisor");
+await page.waitForTimeout(300);
+await page.getByText("بيانات تجريبية").click();
+await page.waitForTimeout(300);
+console.log("advisor rows:", await page.locator("tbody tr").count());
+await page.screenshot({ path: "shots/advisor.png", fullPage: true });
 // dark theme screenshot
 await page.goto("http://localhost:4173/#dashboard");
 await page.locator("aside .btn").first().click();

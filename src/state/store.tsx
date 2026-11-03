@@ -5,6 +5,9 @@
 import React, { createContext, useContext, useEffect, useMemo, useReducer } from "react";
 import { Course, newCourse } from "../core/gpa";
 import { SemesterRecord } from "../core/rules";
+import { PlanProgress, StudyPlan } from "../core/plan";
+import { GradeComponent } from "../core/components";
+import { StudentRecord } from "../core/advisor";
 
 export interface Profile {
   name: string;
@@ -34,6 +37,18 @@ export interface AppState {
   history: SemesterRecord[];
   /** Saved what-if scenarios */
   savedScenarios: { id: string; name: string; courses: Course[]; createdAt: string }[];
+  /** Active study plan id (built-in) or "custom" */
+  planId: string | null;
+  /** Custom plan uploaded by the student */
+  customPlan: StudyPlan | null;
+  /** Per-course status within the plan */
+  planProgress: PlanProgress;
+  /** In-semester grade components per current course id */
+  components: Record<string, GradeComponent[]>;
+  /** Advisor mode: imported cohort (stays local) */
+  advisorStudents: StudentRecord[];
+  /** Optional URL of an extraction service for photo/PDF import */
+  extractionEndpoint: string;
 }
 
 export const SAMPLE_COURSES: Course[] = [
@@ -77,6 +92,12 @@ export const INITIAL_APP_STATE: AppState = {
   courses: SAMPLE_COURSES,
   history: SAMPLE_HISTORY,
   savedScenarios: [],
+  planId: null,
+  customPlan: null,
+  planProgress: {},
+  components: {},
+  advisorStudents: [],
+  extractionEndpoint: "",
 };
 
 type Action =
@@ -86,6 +107,9 @@ type Action =
   | { type: "history"; history: SemesterRecord[] }
   | { type: "saveScenario"; name: string; courses: Course[] }
   | { type: "deleteScenario"; id: string }
+  | { type: "planProgress"; progress: PlanProgress }
+  | { type: "components"; courseId: string; components: GradeComponent[] }
+  | { type: "advisorStudents"; students: StudentRecord[] }
   | { type: "reset" }
   | { type: "loadSample" };
 
@@ -123,6 +147,12 @@ function reducer(state: AppState, action: Action): AppState {
       };
     case "deleteScenario":
       return { ...state, savedScenarios: state.savedScenarios.filter((s) => s.id !== action.id) };
+    case "planProgress":
+      return { ...state, planProgress: action.progress };
+    case "components":
+      return { ...state, components: { ...state.components, [action.courseId]: action.components } };
+    case "advisorStudents":
+      return { ...state, advisorStudents: action.students };
     case "reset":
       return { ...INITIAL_APP_STATE, courses: [], history: [], profile: { ...DEFAULT_PROFILE, previousCgpa: 0, previousGpaHours: 0, completedCredits: 0, previousWarnings: 0 }, theme: state.theme };
     case "loadSample":

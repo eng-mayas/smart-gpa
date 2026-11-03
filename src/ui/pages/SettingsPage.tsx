@@ -80,6 +80,11 @@ export function SettingsPage() {
             </div>
           </div>
           <div className="card">
+            <h2>خدمة الاستخراج من الصور (اختياري)</h2>
+            <p className="tiny">لقراءة صور كشوف العلامات بدقة عالية عبر الذكاء الاصطناعي، انشر الخدمة الموجودة في مجلد <span className="kbd">worker/</span> على Cloudflare Workers والصق رابطها هنا. بدونها يُستخدم OCR داخل المتصفح.</p>
+            <Field label="رابط الخدمة"><input className="input" dir="ltr" placeholder="https://smart-gpa-extract.<account>.workers.dev" value={state.extractionEndpoint} onChange={(e) => dispatch({ type: "set", patch: { extractionEndpoint: e.target.value.trim() } })} /></Field>
+          </div>
+          <div className="card">
             <h2>البيانات</h2>
             <div className="row">
               <button className="btn" onClick={exportJson}>⬇ تصدير JSON</button>

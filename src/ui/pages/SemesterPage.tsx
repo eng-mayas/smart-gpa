@@ -1,5 +1,6 @@
 import React from "react";
 import { useAcademic } from "../../state/useAcademic";
+import { BUILTIN_PLANS } from "../../core/plan";
 import { CourseTable } from "../components/CourseTable";
 import { Gauge, Stat } from "../components/common";
 import { fmtGpa, gpaToPct } from "../../core/format";
@@ -7,13 +8,34 @@ import { pointsToLetter } from "../../core/grading";
 
 export function SemesterPage() {
   const { state, dispatch, scale, semester } = useAcademic();
+  const activePlan = state.planId === "custom" ? state.customPlan : BUILTIN_PLANS.find((p) => p.id === state.planId) ?? null;
+  const archive = () => {
+    if (semester.gpa === null) return;
+    const label = `${state.profile.academicYear} / فصل ${state.history.length + 1}`;
+    dispatch({ type: "history", history: [...state.history, { label, gpa: semester.gpa, gpaHours: semester.gpaCredits, earnedCredits: semester.earnedCredits }] });
+    // mark plan courses done
+    if (activePlan) {
+      const progress = { ...state.planProgress };
+      for (const r of semester.courses) {
+        const pc = activePlan.courses.find((p) => `plan-${p.code}` === r.course.id || p.nameAr === r.course.name || p.name === r.course.name);
+        if (pc && r.letter) progress[pc.code] = { status: "done", letter: r.letter === "P" ? undefined : r.letter };
+      }
+      dispatch({ type: "planProgress", progress });
+    }
+    const newHours = state.profile.previousGpaHours + semester.gpaCredits;
+    const newCgpa = newHours > 0 ? (state.profile.previousCgpa * state.profile.previousGpaHours + semester.totalWeighted) / newHours : 0;
+    dispatch({ type: "profile", patch: { previousCgpa: newCgpa, previousGpaHours: newHours, completedCredits: state.profile.completedCredits + semester.earnedCredits } });
+    dispatch({ type: "courses", courses: [] });
+    alert(`تم ترحيل الفصل إلى السجل (معدل ${semester.gpa.toFixed(2)}). ابدأ فصلاً جديداً.`);
+  };
   return (
     <>
       <div className="topbar">
         <div>
           <h1>حساب المعدل الفصلي</h1>
-          <p className="muted">أدخل المقررات بالعلامة المئوية أو المكافئ الحرفي، ويُحدَّث المعدل فوراً.</p>
+          <p className="muted">أدخل المقررات بالعلامة المئوية أو المكافئ الحرفي، ويُحدَّث المعدل فوراً.{activePlan ? " اكتب اسم المقرر لاختياره من الخطة." : ""}</p>
         </div>
+        <button className="btn" onClick={() => confirm("سيُنقل هذا الفصل إلى السجل الأكاديمي ويُحدَّث المعدل التراكمي والخطة، ثم يُفرَّغ الجدول. متابعة؟") && archive()} disabled={semester.gpa === null || semester.missingGrades > 0} title={semester.missingGrades > 0 ? "أكمل العلامات أولاً" : ""}>📦 انتهى الفصل: ترحيل إلى السجل</button>
       </div>
 
       <div className="grid grid-4 mb">
@@ -28,7 +50,7 @@ export function SemesterPage() {
           <h2>مقررات الفصل</h2>
           <span className="badge blue">السلّم: {scale.nameAr}</span>
         </div>
-        <CourseTable courses={state.courses} onChange={(c) => dispatch({ type: "courses", courses: c })} result={semester} scale={scale} />
+        <CourseTable courses={state.courses} onChange={(c) => dispatch({ type: "courses", courses: c })} result={semester} scale={scale} planCourses={activePlan?.courses} />
       </div>
 
       <div className="grid grid-2 mt">
