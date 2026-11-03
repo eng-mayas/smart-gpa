@@ -8,8 +8,8 @@ mkdirSync("dist/assets", { recursive: true });
 cpSync("index.html", "dist/index.html");
 cpSync("public", "dist", { recursive: true });
 // Stamp the service worker so each build invalidates the previous cache.
-const build = Date.now().toString(36);
-writeFileSync("dist/sw.js", readFileSync("public/sw.js", "utf8").replace("__BUILD__", build));
+const buildStamp = Date.now().toString(36);
+writeFileSync("dist/sw.js", readFileSync("public/sw.js", "utf8").replace("__BUILD__", buildStamp));
 
 const opts = {
   entryPoints: { app: "src/main.tsx" },
