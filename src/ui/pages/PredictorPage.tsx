@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useAcademic } from "../../state/useAcademic";
-import { BUILTIN_PLANS } from "../../core/plan";
 import { CourseTable } from "../components/CourseTable";
 import { Field, NumberInput, Stat, StatusBadge } from "../components/common";
 import { fmtGpa } from "../../core/format";
@@ -9,8 +8,7 @@ import { calculateSemester, combineCgpa } from "../../core/gpa";
 import { transition } from "../../core/rules";
 
 export function PredictorPage() {
-  const { state, dispatch, scale, semester, cumulative, currentState, policy, projectedCredits } = useAcademic();
-  const activePlan = state.planId === "custom" ? state.customPlan : BUILTIN_PLANS.find((p) => p.id === state.planId) ?? null;
+  const { state, dispatch, scale, semester, cumulative, currentState, policy, projectedCredits, activePlan } = useAcademic();
   const p = state.profile;
   const [target, setTarget] = useState<number | "">(2.0);
   const [scenarioName, setScenarioName] = useState("");

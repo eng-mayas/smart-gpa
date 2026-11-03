@@ -295,3 +295,17 @@ export function planToCsv(plan: StudyPlan): string {
 /* ---------- Built-in plans registry ---------- */
 import { IUST_COMPUTER_ENGINEERING } from "./plans/iust-computer-engineering";
 export const BUILTIN_PLANS: StudyPlan[] = [IUST_COMPUTER_ENGINEERING];
+
+/* ---------- Student overrides (fix a prerequisite without waiting for a new release) ---------- */
+export interface PlanCourseOverride { prereqs?: string[]; coreqs?: string[]; credits?: number }
+export type PlanOverrides = Record<string, Record<string, PlanCourseOverride>>; // planId → code → override
+
+export function applyOverrides(plan: StudyPlan, overrides: Record<string, PlanCourseOverride> | undefined): StudyPlan {
+  if (!overrides || Object.keys(overrides).length === 0) return plan;
+  return { ...plan, courses: plan.courses.map((c) => (overrides[c.code] ? { ...c, ...overrides[c.code] } : c)) };
+}
+
+/** Parse "601102, 601101" / "601102;601101" into codes. */
+export function parseCodes(text: string): string[] {
+  return text.split(/[,;\s/&]+/).map((t) => t.trim()).filter((t) => /\d{3,}/.test(t));
+}

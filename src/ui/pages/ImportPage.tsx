@@ -3,7 +3,7 @@ import { useAcademic } from "../../state/useAcademic";
 import { Field } from "../components/common";
 import { ImportedRow, parseTranscriptText } from "../../core/importer";
 import { newCourse } from "../../core/gpa";
-import { BUILTIN_PLANS, PlanProgress } from "../../core/plan";
+import { PlanProgress } from "../../core/plan";
 
 declare global {
   interface Window { Tesseract?: { recognize: (img: File | string, lang: string, opts?: Record<string, unknown>) => Promise<{ data: { text: string } }> } }
@@ -26,14 +26,13 @@ function fileToBase64(f: File): Promise<string> {
 }
 
 export function ImportPage({ go }: { go: (p: string) => void }) {
-  const { state, dispatch, scale } = useAcademic();
+  const { state, dispatch, scale, activePlan: plan } = useAcademic();
   const [text, setText] = useState("");
   const [rows, setRows] = useState<ImportedRow[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [target, setTarget] = useState<"semester" | "plan">("semester");
   const fileRef = useRef<HTMLInputElement>(null);
-  const plan = state.planId === "custom" ? state.customPlan : BUILTIN_PLANS.find((p) => p.id === state.planId) ?? null;
 
   const analyze = (t: string) => { const r = parseTranscriptText(t); setRows(r); if (r.length === 0) setError("لم يُتعرَّف على أي سطر. جرّب تنسيق: الرمز | الاسم | الساعات | العلامة"); else setError(""); };
 

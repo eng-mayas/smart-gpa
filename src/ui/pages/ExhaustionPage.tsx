@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { useAcademic } from "../../state/useAcademic";
-import { BUILTIN_PLANS } from "../../core/plan";
 import { Field, NumberInput, StatusBadge, RiskBadge, BarChart } from "../components/common";
 import { fmtGpa } from "../../core/format";
 import { courseImpact, minimumGradesForTarget, requiredSemesterGpa, runScenario, standardScenarios, hoursNeededAtGpa } from "../../core/predictor";
@@ -17,8 +16,7 @@ const STATUS_OPTIONS: { value: AcademicStatus; label: string }[] = [
 ];
 
 export function ExhaustionPage() {
-  const { state, dispatch, scale, semester, policy, currentState } = useAcademic();
-  const activePlan = state.planId === "custom" ? state.customPlan : BUILTIN_PLANS.find((p) => p.id === state.planId) ?? null;
+  const { state, dispatch, scale, semester, policy, currentState, activePlan } = useAcademic();
   const p = state.profile;
   const setP = (patch: Partial<typeof p>) => dispatch({ type: "profile", patch });
 

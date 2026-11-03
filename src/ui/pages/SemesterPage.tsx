@@ -1,14 +1,12 @@
 import React from "react";
 import { useAcademic } from "../../state/useAcademic";
-import { BUILTIN_PLANS } from "../../core/plan";
 import { CourseTable } from "../components/CourseTable";
 import { Gauge, Stat } from "../components/common";
 import { fmtGpa, gpaToPct } from "../../core/format";
 import { pointsToLetter } from "../../core/grading";
 
 export function SemesterPage() {
-  const { state, dispatch, scale, semester } = useAcademic();
-  const activePlan = state.planId === "custom" ? state.customPlan : BUILTIN_PLANS.find((p) => p.id === state.planId) ?? null;
+  const { state, dispatch, scale, semester, activePlan } = useAcademic();
   const archive = () => {
     if (semester.gpa === null) return;
     const label = `${state.profile.academicYear} / فصل ${state.history.length + 1}`;

@@ -1,13 +1,11 @@
 import React from "react";
 import { useAcademic } from "../../state/useAcademic";
-import { BUILTIN_PLANS } from "../../core/plan";
 import { CourseTable } from "../components/CourseTable";
 import { Field, Gauge, NumberInput, Stat, StatusBadge, RiskBadge } from "../components/common";
 import { fmtDelta, fmtGpa, gpaToPct } from "../../core/format";
 
 export function CumulativePage() {
-  const { state, dispatch, scale, semester, cumulative, predicted, policy } = useAcademic();
-  const activePlan = state.planId === "custom" ? state.customPlan : BUILTIN_PLANS.find((p) => p.id === state.planId) ?? null;
+  const { state, dispatch, scale, semester, cumulative, predicted, policy, activePlan } = useAcademic();
   const p = state.profile;
   const setP = (patch: Partial<typeof p>) => dispatch({ type: "profile", patch });
   const ready = p.previousGpaHours > 0 || semester.gpaCredits > 0;

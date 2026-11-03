@@ -5,7 +5,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useReducer } from "react";
 import { Course, newCourse } from "../core/gpa";
 import { SemesterRecord } from "../core/rules";
-import { PlanProgress, StudyPlan } from "../core/plan";
+import { PlanOverrides, PlanProgress, StudyPlan } from "../core/plan";
 import { GradeComponent } from "../core/components";
 import { StudentRecord } from "../core/advisor";
 
@@ -43,6 +43,8 @@ export interface AppState {
   customPlan: StudyPlan | null;
   /** Per-course status within the plan */
   planProgress: PlanProgress;
+  /** Student corrections to plan courses (prerequisites, credits) */
+  planOverrides: PlanOverrides;
   /** In-semester grade components per current course id */
   components: Record<string, GradeComponent[]>;
   /** Advisor mode: imported cohort (stays local) */
@@ -95,6 +97,7 @@ export const INITIAL_APP_STATE: AppState = {
   planId: null,
   customPlan: null,
   planProgress: {},
+  planOverrides: {},
   components: {},
   advisorStudents: [],
   extractionEndpoint: "",
@@ -108,6 +111,7 @@ type Action =
   | { type: "saveScenario"; name: string; courses: Course[] }
   | { type: "deleteScenario"; id: string }
   | { type: "planProgress"; progress: PlanProgress }
+  | { type: "planOverride"; planId: string; code: string; override: PlanOverrides[string][string] | null }
   | { type: "components"; courseId: string; components: GradeComponent[] }
   | { type: "advisorStudents"; students: StudentRecord[] }
   | { type: "reset" }
@@ -149,6 +153,12 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, savedScenarios: state.savedScenarios.filter((s) => s.id !== action.id) };
     case "planProgress":
       return { ...state, planProgress: action.progress };
+    case "planOverride": {
+      const forPlan = { ...(state.planOverrides[action.planId] ?? {}) };
+      if (action.override === null) delete forPlan[action.code];
+      else forPlan[action.code] = { ...forPlan[action.code], ...action.override };
+      return { ...state, planOverrides: { ...state.planOverrides, [action.planId]: forPlan } };
+    }
     case "components":
       return { ...state, components: { ...state.components, [action.courseId]: action.components } };
     case "advisorStudents":

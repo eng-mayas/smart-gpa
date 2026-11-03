@@ -2,15 +2,17 @@ import React, { useMemo, useState } from "react";
 import { useAcademic } from "../../state/useAcademic";
 import { Field, NumberInput, Progress, Stat } from "../components/common";
 import { fmtGpa, gpaToPct } from "../../core/format";
-import { BUILTIN_PLANS, courseLabel, eligibleCourses, levelOf, parsePlanText, planToCsv, projectGraduation, repeatStrategy, suggestRegistration, summarizePlan, PlanCourse, PlanProgressEntry, StudyPlan } from "../../core/plan";
+import { BUILTIN_PLANS, courseLabel, eligibleCourses, levelOf, parseCodes, parsePlanText, planToCsv, projectGraduation, repeatStrategy, suggestRegistration, summarizePlan, PlanCourse, PlanProgressEntry, StudyPlan } from "../../core/plan";
 import { newCourse } from "../../core/gpa";
 
 const STATUS_AR = { done: "منجز", registered: "مسجّل", remaining: "متبقٍ" } as const;
 const TYPE_AR = { core: "إجباري", elective: "اختياري", university: "متطلب جامعة" } as const;
 
 export function PlanPage({ go }: { go: (p: string) => void }) {
-  const { state, dispatch, scale, policy, currentState } = useAcademic();
-  const plan: StudyPlan | null = state.planId === "custom" ? state.customPlan : BUILTIN_PLANS.find((p) => p.id === state.planId) ?? null;
+  const { state, dispatch, scale, policy, currentState, activePlan: plan } = useAcademic();
+  const [editPrereq, setEditPrereq] = useState<string | null>(null);
+  const overridesForPlan = plan ? state.planOverrides[plan.id] ?? {} : {};
+  const setOverride = (code: string, override: { prereqs?: string[]; coreqs?: string[] } | null) => plan && dispatch({ type: "planOverride", planId: plan.id, code, override });
   const progress = state.planProgress;
   const [filter, setFilter] = useState<"all" | "done" | "registered" | "remaining" | "eligible">("all");
   const [search, setSearch] = useState("");
@@ -236,9 +238,24 @@ export function PlanPage({ go }: { go: (p: string) => void }) {
                             <td>{courseLabel(c)}{c.note && <div className="tiny">{c.note}</div>}</td>
                             <td className="c num">{c.credits}</td>
                             <td className="c tiny">{TYPE_AR[c.type]}</td>
-                            <td className="tiny num">
-                              {c.prereqs.join(", ") || "—"}{c.coreqs?.length ? ` (متزامن: ${c.coreqs.join(", ")})` : ""}
-                              {st !== "done" && el && !el.eligible && <div style={{ color: "var(--orange)" }}>ناقص: {el.missing.join(", ")}</div>}
+                            <td className="tiny num" style={{ minWidth: 170 }}>
+                              {editPrereq === c.code ? (
+                                <div className="stack" style={{ gap: 4 }}>
+                                  <input className="input" dir="ltr" placeholder="601102, 601101 (فارغ = بلا متطلب)" defaultValue={c.prereqs.join(", ")} autoFocus
+                                    onKeyDown={(ev) => { if (ev.key === "Enter") { setOverride(c.code, { prereqs: parseCodes((ev.target as HTMLInputElement).value) }); setEditPrereq(null); } if (ev.key === "Escape") setEditPrereq(null); }}
+                                    onBlur={(ev) => { setOverride(c.code, { prereqs: parseCodes(ev.target.value) }); setEditPrereq(null); }} />
+                                  <span className="tiny" style={{ direction: "rtl" }}>Enter للحفظ · Esc للإلغاء</span>
+                                </div>
+                              ) : (
+                                <>
+                                  <span style={{ cursor: "pointer", borderBottom: "1px dashed var(--text-3)" }} title="انقر لتعديل المتطلب السابق" onClick={() => setEditPrereq(c.code)}>
+                                    {c.prereqs.join(", ") || "بلا متطلب"}
+                                  </span>
+                                  {c.coreqs?.length ? ` (متزامن: ${c.coreqs.join(", ")})` : ""}
+                                  {overridesForPlan[c.code] && <button className="btn ghost sm" title="استعادة الأصل" onClick={() => setOverride(c.code, null)}>↺</button>}
+                                  {st !== "done" && el && !el.eligible && <div style={{ color: "var(--orange)" }}>ناقص: {el.missing.join(", ")}</div>}
+                                </>
+                              )}
                             </td>
                             <td className="c">
                               <select className="input" style={{ width: "auto" }} value={st} onChange={(ev) => setEntry(c.code, ev.target.value === "remaining" ? null : { status: ev.target.value as PlanProgressEntry["status"] })}>
@@ -262,7 +279,7 @@ export function PlanPage({ go }: { go: (p: string) => void }) {
               </div>
             ))}
             {visible.length === 0 && <p className="muted">لا توجد مقررات مطابقة.</p>}
-            <p className="tiny">وفق سياسة {policy.universityNameAr}: {atRisk ? "أنت في وضع إنذار، لذا يُقترح حمل مخفّف." : "وضعك سليم."}</p>
+            <p className="tiny">انقر على المتطلب السابق لأي مقرر لتصحيحه (اتركه فارغاً إن كان المقرر بلا متطلب)؛ التصحيحات تُحفظ على جهازك وتظهر بعلامة ↺. · وفق سياسة {policy.universityNameAr}: {atRisk ? "أنت في وضع إنذار، لذا يُقترح حمل مخفّف." : "وضعك سليم."}</p>
           </div>
         </>
       )}

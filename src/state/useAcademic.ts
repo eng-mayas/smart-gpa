@@ -3,6 +3,7 @@ import { useStore } from "./store";
 import { getScale } from "../core/grading";
 import { calculateCumulative, calculateSemester } from "../core/gpa";
 import { AcademicState, DRAFT_SY_PRIVATE_POLICY, INITIAL_STATE, POLICIES, evaluateHistory, transition } from "../core/rules";
+import { BUILTIN_PLANS, applyOverrides, StudyPlan } from "../core/plan";
 
 /** Derive the current FSM state: from the history when present, otherwise from the profile's warning count. */
 export function stateFromProfile(previousWarnings: number, previousGpaHours: number, semestersDone: number): AcademicState {
@@ -29,6 +30,9 @@ export function useAcademic() {
     const projectedCredits = completedCredits + semester.earnedCredits;
     const predicted = transition(currentState, cumulative.newCgpa, policy, projectedCredits);
 
-    return { state, dispatch, scale, policy, semester, cumulative, timeline, historyHours, currentState, predicted, projectedCredits };
+    const basePlan: StudyPlan | null = state.planId === "custom" ? state.customPlan : BUILTIN_PLANS.find((p) => p.id === state.planId) ?? null;
+    const activePlan = basePlan ? applyOverrides(basePlan, state.planOverrides[basePlan.id]) : null;
+
+    return { state, dispatch, scale, policy, semester, cumulative, timeline, historyHours, currentState, predicted, projectedCredits, activePlan };
   }, [state, dispatch]);
 }
