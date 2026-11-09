@@ -11,6 +11,6 @@ export function exportBackup(state: AppState): void {
 /** True when real data exists and no backup was made in the last `days`. */
 export function backupDue(state: AppState, days = 14): boolean {
   if (state.demo) return false;
-  if (!state.lastBackup) return state.history.length > 0 || state.courses.length > 2 || Object.keys(state.planProgress).length > 0;
+  if (!state.lastBackup) return state.semesters.length > 0 || state.courses.length > 2 || Object.keys(state.planProgress).length > 0;
   return Date.now() - new Date(state.lastBackup).getTime() > days * 86400000;
 }

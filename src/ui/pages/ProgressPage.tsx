@@ -8,7 +8,7 @@ import { markToBand } from "../../core/grading";
 import { transition } from "../../core/rules";
 
 export function ProgressPage({ go }: { go: (p: string) => void }) {
-  const { state, dispatch, scale, policy, currentState, projectedCredits } = useAcademic();
+  const { state, dispatch, scale, policy, currentState, projectedCredits, derivedProfile, hasSemesters } = useAcademic();
   const [open, setOpen] = useState<string | null>(state.courses[0]?.id ?? null);
   const courses = state.courses.filter((c) => c.status !== "withdrawn" && c.status !== "excluded");
   const comps = (c: Course): GradeComponent[] => state.components[c.id] ?? DEFAULT_COMPONENTS.map((x) => ({ ...x }));
@@ -21,7 +21,7 @@ export function ProgressPage({ go }: { go: (p: string) => void }) {
     return { ...c, grade: { kind: "mark", value: Math.round(s.projectedMark * 10) / 10 } };
   });
   const projected = calculateSemester(projectedCourses, scale);
-  const projCgpa = projected.gpa === null ? null : combineCgpa(state.profile.previousCgpa, state.profile.previousGpaHours, projected.gpa, projected.gpaCredits);
+  const projCgpa = projected.gpa === null ? null : combineCgpa(derivedProfile.previousCgpa, derivedProfile.previousGpaHours, projected.gpa, projected.gpaCredits);
   const predicted = transition(currentState, projCgpa, policy, projectedCredits);
   const scoredCount = courses.filter((c) => standing(comps(c)).doneWeight > 0).length;
 

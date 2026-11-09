@@ -8,9 +8,9 @@ import { QuickStart } from "../components/QuickStart";
 import { backupDue, exportBackup } from "../../state/backup";
 
 export function DashboardPage({ go }: { go: (p: string) => void }) {
-  const { state, dispatch, scale, policy, semester, cumulative, currentState, predicted, timeline, historyHours } = useAcademic();
-  const p = state.profile;
-  const isEmpty = p.previousGpaHours === 0 && state.history.length === 0 && state.courses.length === 0;
+  const { state, dispatch, scale, policy, semester, cumulative, currentState, predicted, timeline, historyHours, derivedProfile, hasSemesters } = useAcademic();
+  const p = derivedProfile;
+  const isEmpty = p.previousGpaHours === 0 && state.semesters.length === 0 && state.courses.length === 0;
   const th = nextThresholds(currentState, policy, p.completedCredits);
   const reqSafe = requiredSemesterGpa({ previousCgpa: p.previousCgpa, previousGpaHours: p.previousGpaHours, semesterHours: semester.totalCredits, targetCgpa: th.safe });
   const creditsDone = p.completedCredits;
@@ -116,8 +116,8 @@ export function DashboardPage({ go }: { go: (p: string) => void }) {
             <tbody>
               <tr><td>مقررات الفصل</td><td className="c num">{state.courses.length}</td></tr>
               <tr><td>مقررات راسبة (متوقع)</td><td className="c num" style={{ color: semester.failedCourses ? "var(--red)" : undefined }}>{semester.failedCourses}</td></tr>
-              <tr><td>الفصول المسجّلة في السجل</td><td className="c num">{timeline.length}</td></tr>
-              <tr><td>الساعات في السجل</td><td className="c num">{historyHours}</td></tr>
+              <tr><td>الفصول المكتملة في «فصولي»</td><td className="c num">{timeline.length}</td></tr>
+              <tr><td>الساعات المحسوبة</td><td className="c num">{historyHours}</td></tr>
               <tr><td>السياسة</td><td className="c tiny">{policy.verification === "verified" ? <span className="badge green">موثّقة</span> : <span className="badge yellow">مسودة</span>}</td></tr>
             </tbody>
           </table>

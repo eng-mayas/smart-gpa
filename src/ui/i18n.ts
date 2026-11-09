@@ -9,7 +9,7 @@ const dict = {
   nav_predictor: { ar: "توقع المعدل", en: "GPA Predictor" },
   nav_exhaustion: { ar: "كيف أتجنب الاستنفاذ؟", en: "Avoid Exhaustion" },
   nav_warnings: { ar: "الإنذارات الأكاديمية", en: "Academic Warnings" },
-  nav_history: { ar: "السجل الأكاديمي", en: "Academic History" },
+  nav_history: { ar: "فصولي", en: "My Semesters" },
   nav_regulations: { ar: "الأنظمة الجامعية", en: "University Regulations" },
   nav_plan: { ar: "الخطة الدراسية", en: "Study Plan" },
   nav_progress: { ar: "علاماتي خلال الفصل", en: "In-Semester Grades" },

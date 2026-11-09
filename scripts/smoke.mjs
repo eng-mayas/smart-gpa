@@ -28,7 +28,7 @@ await page.route("**/fonts.googleapis.com/**", (r) => r.abort());
 await page.goto("http://localhost:4173/#settings"); await page.waitForTimeout(300);
 await page.getByText("تحميل بيانات تجريبية").click(); await page.waitForTimeout(200);
 
-const routes = ["dashboard", "history", "plan", "progress", "semester", "cumulative", "predictor", "exhaustion", "warnings", "import", "regulations", "advisor", "settings"];
+const routes = ["dashboard", "semesters", "plan", "progress", "semester", "cumulative", "predictor", "exhaustion", "warnings", "import", "regulations", "advisor", "settings"];
 for (const r of routes) {
   await page.goto(`http://localhost:4173/#${r}`);
   await page.waitForTimeout(400);
@@ -71,6 +71,16 @@ await page.locator("textarea").first().fill("301201 | تحليل هندسي (1) 
 await page.locator("button.btn.primary").first().click();
 await page.waitForTimeout(200);
 console.log("import rows:", await page.locator("tbody tr").count());
+// semesters: finish current semester → appears as completed; derived CGPA updates
+await page.goto("http://localhost:4173/#semesters"); await page.waitForTimeout(300);
+const semBefore = await page.locator(".stat .value").nth(1).textContent();
+// remove the course without a grade so "finish" is enabled
+await page.locator('tbody tr', { hasText: "لا توجد علامة" }).first().locator('button[aria-label="حذف"]').click();
+page.once("dialog", (d) => d.accept());
+await page.getByRole("button", { name: /انتهى الفصل/ }).click(); await page.waitForTimeout(300);
+const semAfter = await page.locator(".stat .value").nth(1).textContent();
+console.log("semesters completed before/after:", semBefore, "→", semAfter);
+await page.screenshot({ path: "shots/semesters.png", fullPage: true });
 // advisor: sample data
 await page.goto("http://localhost:4173/#advisor");
 await page.waitForTimeout(300);

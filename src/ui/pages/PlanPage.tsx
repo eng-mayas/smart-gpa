@@ -9,11 +9,10 @@ const STATUS_AR = { done: "منجز", registered: "مسجّل", remaining: "مت
 const TYPE_AR = { core: "إجباري", elective: "اختياري", university: "متطلب جامعة" } as const;
 
 export function PlanPage({ go }: { go: (p: string) => void }) {
-  const { state, dispatch, scale, policy, currentState, activePlan: plan } = useAcademic();
+  const { state, dispatch, scale, policy, currentState, activePlan: plan, planProgress: progress } = useAcademic();
   const [editPrereq, setEditPrereq] = useState<string | null>(null);
   const overridesForPlan = plan ? state.planOverrides[plan.id] ?? {} : {};
   const setOverride = (code: string, override: { prereqs?: string[]; coreqs?: string[] } | null) => plan && dispatch({ type: "planOverride", planId: plan.id, code, override });
-  const progress = state.planProgress;
   const [filter, setFilter] = useState<"all" | "done" | "registered" | "remaining" | "eligible">("all");
   const [search, setSearch] = useState("");
   const [maxCredits, setMaxCredits] = useState<number | "">(18);
@@ -30,9 +29,9 @@ export function PlanPage({ go }: { go: (p: string) => void }) {
   const grad = summary ? projectGraduation(summary, assumedGpa === "" ? 3 : assumedGpa, maxCredits === "" ? 18 : maxCredits, targetCgpa === "" ? undefined : targetCgpa, scale) : null;
 
   const setEntry = (code: string, patch: Partial<PlanProgressEntry> | null) => {
-    const next = { ...progress };
+    const next = { ...state.planProgress };
     if (patch === null) delete next[code];
-    else next[code] = { status: "remaining", ...next[code], ...patch };
+    else next[code] = { status: "remaining", ...progress[code], ...next[code], ...patch };
     dispatch({ type: "planProgress", progress: next });
   };
 
@@ -54,9 +53,6 @@ export function PlanPage({ go }: { go: (p: string) => void }) {
     if (!suggestion) return;
     const courses = suggestion.courses.map((c) => newCourse({ id: `plan-${c.code}`, name: c.nameAr ?? c.name, credits: c.credits }));
     dispatch({ type: "courses", courses });
-    const next = { ...progress };
-    for (const c of suggestion.courses) next[c.code] = { ...next[c.code], status: "registered" };
-    dispatch({ type: "planProgress", progress: next });
     go("semester");
   };
 
@@ -279,7 +275,7 @@ export function PlanPage({ go }: { go: (p: string) => void }) {
               </div>
             ))}
             {visible.length === 0 && <p className="muted">لا توجد مقررات مطابقة.</p>}
-            <p className="tiny">انقر على المتطلب السابق لأي مقرر لتصحيحه (اتركه فارغاً إن كان المقرر بلا متطلب)؛ التصحيحات تُحفظ على جهازك وتظهر بعلامة ↺. · وفق سياسة {policy.universityNameAr}: {atRisk ? "أنت في وضع إنذار، لذا يُقترح حمل مخفّف." : "وضعك سليم."}</p>
+            <p className="tiny">حالات المقررات تُحسب تلقائياً من «فصولي» والفصل الحالي؛ يمكنك تحديدها يدوياً للمقررات المنقولة أو غير المسجلة. · انقر على المتطلب السابق لأي مقرر لتصحيحه (اتركه فارغاً إن كان المقرر بلا متطلب)؛ التصحيحات تُحفظ على جهازك وتظهر بعلامة ↺. · وفق سياسة {policy.universityNameAr}: {atRisk ? "أنت في وضع إنذار، لذا يُقترح حمل مخفّف." : "وضعك سليم."}</p>
           </div>
         </>
       )}

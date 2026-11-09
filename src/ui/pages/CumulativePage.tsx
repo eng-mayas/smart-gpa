@@ -5,8 +5,8 @@ import { Field, Gauge, NumberInput, Stat, StatusBadge, RiskBadge } from "../comp
 import { fmtDelta, fmtGpa, gpaToPct } from "../../core/format";
 
 export function CumulativePage() {
-  const { state, dispatch, scale, semester, cumulative, predicted, policy, activePlan } = useAcademic();
-  const p = state.profile;
+  const { state, dispatch, scale, semester, cumulative, predicted, policy, activePlan, derivedProfile, hasSemesters } = useAcademic();
+  const p = derivedProfile;
   const setP = (patch: Partial<typeof p>) => dispatch({ type: "profile", patch });
   const ready = p.previousGpaHours > 0 || semester.gpaCredits > 0;
 
@@ -22,12 +22,13 @@ export function CumulativePage() {
       <div className="grid grid-3 mb">
         <div className="card">
           <h3>البيانات السابقة</h3>
+          {hasSemesters && <p className="tiny">محسوبة تلقائياً من «فصولي» ({state.semesters.length} فصل). لتعديلها عدّل الفصول نفسها.</p>}
           <div className="stack">
             <Field label="المعدل التراكمي السابق">
-              <NumberInput value={p.previousCgpa} min={0} max={scale.maxPoints} step={0.01} onChange={(v) => setP({ previousCgpa: v === "" ? 0 : v })} />
+              <NumberInput value={Number(p.previousCgpa.toFixed(3))} min={0} max={scale.maxPoints} step={0.01} onChange={(v) => !hasSemesters && setP({ previousCgpa: v === "" ? 0 : v })} />
             </Field>
             <Field label="الساعات المحسوبة في المعدل سابقاً" hint="الساعات التي دخلت في حساب المعدل التراكمي (دون المنسحب/المستثنى)">
-              <NumberInput value={p.previousGpaHours} min={0} max={300} onChange={(v) => setP({ previousGpaHours: v === "" ? 0 : v })} />
+              <NumberInput value={p.previousGpaHours} min={0} max={300} onChange={(v) => !hasSemesters && setP({ previousGpaHours: v === "" ? 0 : v })} />
             </Field>
           </div>
         </div>

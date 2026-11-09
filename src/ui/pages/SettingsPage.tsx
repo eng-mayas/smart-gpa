@@ -38,6 +38,7 @@ export function SettingsPage() {
       <div className="grid grid-2">
         <div className="card">
           <h2>الملف الأكاديمي</h2>
+          {state.semesters.length > 0 && <p className="tiny">المعدل والساعات والإنذارات تُحسب تلقائياً من «فصولي» وتتجاهل القيم اليدوية أدناه.</p>}
           <div className="grid grid-2">
             <Field label="الاسم (اختياري)"><input className="input" value={p.name} onChange={(e) => setP({ name: e.target.value })} /></Field>
             <Field label="الجامعة">

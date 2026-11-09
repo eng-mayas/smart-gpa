@@ -3,7 +3,6 @@ import { useAcademic } from "../../state/useAcademic";
 import { Field } from "../components/common";
 import { ImportedRow, parseTranscriptText } from "../../core/importer";
 import { newCourse } from "../../core/gpa";
-import { PlanProgress } from "../../core/plan";
 
 declare global {
   interface Window { Tesseract?: { recognize: (img: File | string, lang: string, opts?: Record<string, unknown>) => Promise<{ data: { text: string } }> } }
@@ -52,7 +51,7 @@ export function ImportPage({ go }: { go: (p: string) => void }) {
   const [rows, setRows] = useState<ImportedRow[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [target, setTarget] = useState<"semester" | "plan">("semester");
+  const [target, setTarget] = useState<"semester" | "past">("semester");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const analyze = (t: string) => { const r = parseTranscriptText(t); setRows(r); if (r.length === 0) setError("لم يُتعرَّف على أي سطر. جرّب تنسيق: الرمز | الاسم | الساعات | العلامة"); else setError(""); };
@@ -101,17 +100,16 @@ export function ImportPage({ go }: { go: (p: string) => void }) {
       dispatch({ type: "courses", courses });
       go("semester");
     } else {
-      const next: PlanProgress = { ...state.planProgress };
-      let matched = 0;
-      for (const r of good) {
-        const code = r.code ?? plan?.courses.find((c) => c.name.toLowerCase() === r.name.toLowerCase() || c.nameAr === r.name)?.code;
-        if (!code) continue;
-        matched++;
-        next[code] = { status: "done", mark: r.mark, letter: r.letter ?? (r.mark !== undefined ? undefined : next[code]?.letter) };
-      }
-      dispatch({ type: "planProgress", progress: next });
-      alert(`تم تحديث ${matched} مقرراً في الخطة من أصل ${good.length}.`);
-      go("plan");
+      const courses = good.map((r) => {
+        const pc = plan?.courses.find((c) => c.code === r.code || c.name.toLowerCase() === r.name.toLowerCase() || c.nameAr === r.name);
+        return newCourse({
+          id: pc ? `plan-${pc.code}` : undefined, name: pc ? (pc.nameAr ?? pc.name) : r.name, credits: r.credits ?? pc?.credits ?? 3,
+          grade: r.mark !== undefined ? { kind: "mark", value: r.mark } : r.letter ? { kind: "letter", value: r.letter } : { kind: "none" },
+        });
+      });
+      const label = `${state.profile.academicYear || "فصل"} / ف${state.semesters.length + 1}`;
+      dispatch({ type: "semesters", semesters: [...state.semesters, { id: Math.random().toString(36).slice(2, 8), label, kind: "detailed", courses }] });
+      go("semesters");
     }
   };
 
@@ -155,7 +153,7 @@ export function ImportPage({ go }: { go: (p: string) => void }) {
               <Field label="اعتماد كـ">
                 <select className="input" value={target} onChange={(e) => setTarget(e.target.value as "semester" | "plan")}>
                   <option value="semester">مقررات الفصل الحالي</option>
-                  <option value="plan" disabled={!plan}>مقررات منجزة في الخطة الدراسية{plan ? "" : " (اختر خطة أولاً)"}</option>
+                  <option value="past">فصل مكتمل سابق (يُضاف إلى «فصولي»)</option>
                 </select>
               </Field>
               <button className="btn primary" onClick={apply}>اعتماد</button>

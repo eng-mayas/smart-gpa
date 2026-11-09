@@ -8,8 +8,8 @@ import { calculateSemester, combineCgpa } from "../../core/gpa";
 import { transition } from "../../core/rules";
 
 export function PredictorPage() {
-  const { state, dispatch, scale, semester, cumulative, currentState, policy, projectedCredits, activePlan } = useAcademic();
-  const p = state.profile;
+  const { state, dispatch, scale, semester, cumulative, currentState, policy, projectedCredits, activePlan, derivedProfile, hasSemesters } = useAcademic();
+  const p = derivedProfile;
   const [target, setTarget] = useState<number | "">(2.0);
   const [scenarioName, setScenarioName] = useState("");
 

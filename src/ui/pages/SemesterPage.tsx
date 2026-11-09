@@ -9,22 +9,11 @@ export function SemesterPage() {
   const { state, dispatch, scale, semester, activePlan } = useAcademic();
   const archive = () => {
     if (semester.gpa === null) return;
-    const label = `${state.profile.academicYear} / فصل ${state.history.length + 1}`;
-    dispatch({ type: "history", history: [...state.history, { label, gpa: semester.gpa, gpaHours: semester.gpaCredits, earnedCredits: semester.earnedCredits }] });
-    // mark plan courses done
-    if (activePlan) {
-      const progress = { ...state.planProgress };
-      for (const r of semester.courses) {
-        const pc = activePlan.courses.find((p) => `plan-${p.code}` === r.course.id || p.nameAr === r.course.name || p.name === r.course.name);
-        if (pc && r.letter) progress[pc.code] = { status: "done", letter: r.letter === "P" ? undefined : r.letter };
-      }
-      dispatch({ type: "planProgress", progress });
-    }
-    const newHours = state.profile.previousGpaHours + semester.gpaCredits;
-    const newCgpa = newHours > 0 ? (state.profile.previousCgpa * state.profile.previousGpaHours + semester.totalWeighted) / newHours : 0;
-    dispatch({ type: "profile", patch: { previousCgpa: newCgpa, previousGpaHours: newHours, completedCredits: state.profile.completedCredits + semester.earnedCredits } });
+    const label = `${state.profile.academicYear || "فصل"} / ف${state.semesters.length + 1}`;
+    dispatch({ type: "semesters", semesters: [...state.semesters, { id: Math.random().toString(36).slice(2, 8), label, kind: "detailed", courses: state.courses }] });
+    dispatch({ type: "profile", patch: { previousCgpa: 0, previousGpaHours: 0, completedCredits: 0, previousWarnings: 0 } });
     dispatch({ type: "courses", courses: [] });
-    alert(`تم ترحيل الفصل إلى السجل (معدل ${semester.gpa.toFixed(2)}). ابدأ فصلاً جديداً.`);
+    alert(`تم نقل الفصل إلى «فصولي» (معدل ${semester.gpa.toFixed(2)}). ابدأ فصلاً جديداً.`);
   };
   return (
     <>

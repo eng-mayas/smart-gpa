@@ -6,8 +6,8 @@ import { AcademicStatus, describeState, nextThresholds, riskLevel, STATUS_COLORS
 import { requiredSemesterGpa } from "../../core/predictor";
 
 export function WarningsPage() {
-  const { state, scale, policy, currentState, predicted, cumulative, semester, projectedCredits, timeline } = useAcademic();
-  const p = state.profile;
+  const { state, scale, policy, currentState, predicted, cumulative, semester, projectedCredits, timeline, derivedProfile, hasSemesters } = useAcademic();
+  const p = derivedProfile;
   const th = nextThresholds(currentState, policy, p.completedCredits);
   const hours = semester.totalCredits;
   const reqSafe = requiredSemesterGpa({ previousCgpa: p.previousCgpa, previousGpaHours: p.previousGpaHours, semesterHours: hours, targetCgpa: th.safe });

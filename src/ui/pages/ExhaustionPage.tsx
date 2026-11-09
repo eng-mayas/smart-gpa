@@ -16,8 +16,8 @@ const STATUS_OPTIONS: { value: AcademicStatus; label: string }[] = [
 ];
 
 export function ExhaustionPage() {
-  const { state, dispatch, scale, semester, policy, currentState, activePlan } = useAcademic();
-  const p = state.profile;
+  const { state, dispatch, scale, semester, policy, currentState, activePlan, derivedProfile, hasSemesters } = useAcademic();
+  const p = derivedProfile;
   const setP = (patch: Partial<typeof p>) => dispatch({ type: "profile", patch });
 
   const [status, setStatus] = useState<AcademicStatus>(isTerminal(currentState.status) ? "warning_2" : currentState.status === "not_evaluated" ? "good" : currentState.status);
@@ -60,10 +60,11 @@ export function ExhaustionPage() {
       <div className="grid grid-3 mb">
         <div className="card">
           <h3>وضعك الحالي</h3>
+          {hasSemesters && <p className="tiny">محسوب من «فصولي»؛ عدّل الفصول لتغييره.</p>}
           <div className="stack">
-            <Field label="المعدل التراكمي الحالي"><NumberInput value={p.previousCgpa} min={0} max={scale.maxPoints} step={0.01} onChange={(v) => setP({ previousCgpa: v === "" ? 0 : v })} /></Field>
-            <Field label="الساعات المحسوبة في المعدل"><NumberInput value={p.previousGpaHours} min={0} max={300} onChange={(v) => setP({ previousGpaHours: v === "" ? 0 : v })} /></Field>
-            <Field label="الساعات المنجزة (المكتسبة)"><NumberInput value={p.completedCredits} min={0} max={300} onChange={(v) => setP({ completedCredits: v === "" ? 0 : v })} /></Field>
+            <Field label="المعدل التراكمي الحالي"><NumberInput value={Number(p.previousCgpa.toFixed(3))} min={0} max={scale.maxPoints} step={0.01} onChange={(v) => !hasSemesters && setP({ previousCgpa: v === "" ? 0 : v })} /></Field>
+            <Field label="الساعات المحسوبة في المعدل"><NumberInput value={p.previousGpaHours} min={0} max={300} onChange={(v) => !hasSemesters && setP({ previousGpaHours: v === "" ? 0 : v })} /></Field>
+            <Field label="الساعات المنجزة (المكتسبة)"><NumberInput value={p.completedCredits} min={0} max={300} onChange={(v) => !hasSemesters && setP({ completedCredits: v === "" ? 0 : v })} /></Field>
           </div>
         </div>
         <div className="card">
@@ -74,7 +75,7 @@ export function ExhaustionPage() {
                 {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </Field>
-            <Field label="عدد الإنذارات السابقة"><NumberInput value={p.previousWarnings} min={0} max={5} onChange={(v) => setP({ previousWarnings: v === "" ? 0 : v })} /></Field>
+            <Field label="عدد الإنذارات السابقة"><NumberInput value={p.previousWarnings} min={0} max={5} onChange={(v) => !hasSemesters && setP({ previousWarnings: v === "" ? 0 : v })} /></Field>
             {(status === "remedial_long" || status === "exception" || status === "remedial_short") && (
               <Field label="الفصول المتبقية في الفرصة الحالية"><NumberInput value={remaining} min={1} max={4} onChange={setRemaining} /></Field>
             )}

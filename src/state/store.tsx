@@ -3,8 +3,24 @@
  * The persistence layer is isolated here so a Supabase adapter can replace it later.
  */
 import React, { createContext, useContext, useEffect, useMemo, useReducer } from "react";
-import { Course, newCourse } from "../core/gpa";
+import { Course, calculateSemester, newCourse } from "../core/gpa";
+import { DEFAULT_SCALE } from "../core/grading";
 import { SemesterRecord } from "../core/rules";
+
+/**
+ * A completed semester in "فصولي". Either detailed (courses with grades — everything else is derived)
+ * or quick (only the semester GPA and hours, for old semesters the student does not want to itemize).
+ */
+export interface SemesterEntry {
+  id: string;
+  label: string;
+  kind: "detailed" | "quick";
+  courses: Course[];
+  /** quick only */
+  gpa?: number | null;
+  gpaHours?: number;
+  earnedCredits?: number;
+}
 import { PlanOverrides, PlanProgress, StudyPlan } from "../core/plan";
 import { GradeComponent } from "../core/components";
 import { StudentRecord } from "../core/advisor";
@@ -33,8 +49,10 @@ export interface AppState {
   profile: Profile;
   /** Current semester courses (shared by semester/cumulative/predictor pages) */
   courses: Course[];
-  /** Academic history, one record per completed semester */
-  history: SemesterRecord[];
+  /** Completed semesters — the single source of truth (GPA history, plan progress and profile numbers derive from it) */
+  semesters: SemesterEntry[];
+  /** @deprecated migrated into semesters; kept for old backups */
+  history?: SemesterRecord[];
   /** Saved what-if scenarios */
   savedScenarios: { id: string; name: string; courses: Course[]; createdAt: string }[];
   /** Active study plan id (built-in) or "custom" */
@@ -68,12 +86,27 @@ export const SAMPLE_COURSES: Course[] = [
   newCourse({ id: "c6", name: "دارات كهربائية", credits: 3, grade: { kind: "none" } }),
 ];
 
-export const SAMPLE_HISTORY: SemesterRecord[] = [
-  { label: "2023-2024 / ف1", gpa: 1.95, gpaHours: 15 },
-  { label: "2023-2024 / ف2", gpa: 1.62, gpaHours: 16 },
-  { label: "2024-2025 / ف1", gpa: 2.35, gpaHours: 15 },
-  { label: "2024-2025 / ف2", gpa: 1.48, gpaHours: 14 },
+export const SAMPLE_SEMESTERS: SemesterEntry[] = [
+  { id: "s1", label: "2023-2024 / ف1", kind: "quick", courses: [], gpa: 1.95, gpaHours: 15, earnedCredits: 15 },
+  { id: "s2", label: "2023-2024 / ف2", kind: "quick", courses: [], gpa: 1.62, gpaHours: 16, earnedCredits: 13 },
+  { id: "s3", label: "2024-2025 / ف1", kind: "quick", courses: [], gpa: 2.35, gpaHours: 15, earnedCredits: 15 },
+  {
+    id: "s4", label: "2024-2025 / ف2", kind: "detailed", courses: [
+      newCourse({ id: "p1", name: "رياضيات 1", credits: 4, grade: { kind: "mark", value: 52 } }),
+      newCourse({ id: "p2", name: "مقدمة برمجة", credits: 3, grade: { kind: "mark", value: 61 } }),
+      newCourse({ id: "p3", name: "فيزياء 1", credits: 3, grade: { kind: "mark", value: 48 } }),
+      newCourse({ id: "p4", name: "لغة عربية", credits: 2, grade: { kind: "mark", value: 74 } }),
+      newCourse({ id: "p5", name: "مهارات حاسوب", credits: 2, grade: { kind: "mark", value: 66 } }),
+    ],
+  },
 ];
+
+/** Convert a semester entry to the record the rules engine consumes. */
+export function semesterToRecord(s: SemesterEntry, scale = DEFAULT_SCALE): SemesterRecord {
+  if (s.kind === "quick") return { label: s.label, gpa: s.gpa ?? null, gpaHours: s.gpaHours ?? 0, earnedCredits: s.earnedCredits ?? s.gpaHours ?? 0 };
+  const r = calculateSemester(s.courses, scale);
+  return { label: s.label, gpa: r.gpa, gpaHours: r.gpaCredits, earnedCredits: r.earnedCredits };
+}
 
 export const DEFAULT_PROFILE: Profile = {
   name: "",
@@ -101,7 +134,7 @@ export const INITIAL_APP_STATE: AppState = {
   policyId: "sy-private-unified-v1",
   profile: EMPTY_PROFILE,
   courses: [],
-  history: [],
+  semesters: [],
   savedScenarios: [],
   planId: null,
   customPlan: null,
@@ -119,7 +152,7 @@ type Action =
   | { type: "set"; patch: Partial<AppState> }
   | { type: "profile"; patch: Partial<Profile> }
   | { type: "courses"; courses: Course[] }
-  | { type: "history"; history: SemesterRecord[] }
+  | { type: "semesters"; semesters: SemesterEntry[] }
   | { type: "saveScenario"; name: string; courses: Course[] }
   | { type: "deleteScenario"; id: string }
   | { type: "planProgress"; progress: PlanProgress }
@@ -137,7 +170,13 @@ function load(): AppState {
     if (!raw) return INITIAL_APP_STATE;
     const parsed = JSON.parse(raw) as AppState;
     if (parsed.version !== 1) return INITIAL_APP_STATE;
-    const merged = { ...INITIAL_APP_STATE, ...parsed, profile: { ...EMPTY_PROFILE, ...parsed.profile } };
+    const merged: AppState = { ...INITIAL_APP_STATE, ...parsed, profile: { ...EMPTY_PROFILE, ...parsed.profile } };
+    // Migration: GPA-only history → quick semesters.
+    if (!parsed.semesters && Array.isArray(parsed.history)) {
+      merged.semesters = parsed.history.map((h, i) => ({ id: `mig-${i}`, label: h.label, kind: "quick" as const, courses: [], gpa: h.gpa, gpaHours: h.gpaHours, earnedCredits: h.earnedCredits ?? h.gpaHours }));
+    }
+    merged.semesters = merged.semesters ?? [];
+    delete merged.history;
     // Migration: the hand-drawn draft was the only policy before the verified unified system was added.
     if (parsed.policyId === "sy-private-draft" && !("policyMigrated" in parsed)) merged.policyId = "sy-private-unified-v1";
     return merged;
@@ -163,8 +202,8 @@ function reduce(state: AppState, action: Action): AppState {
       return { ...state, profile: { ...state.profile, ...action.patch } };
     case "courses":
       return { ...state, courses: action.courses };
-    case "history":
-      return { ...state, history: action.history };
+    case "semesters":
+      return { ...state, semesters: action.semesters };
     case "saveScenario":
       return {
         ...state,
@@ -190,7 +229,7 @@ function reduce(state: AppState, action: Action): AppState {
     case "reset":
       return { ...INITIAL_APP_STATE, theme: state.theme, lang: state.lang, scaleId: state.scaleId, policyId: state.policyId, extractionEndpoint: state.extractionEndpoint };
     case "loadSample":
-      return { ...INITIAL_APP_STATE, theme: state.theme, lang: state.lang, profile: DEFAULT_PROFILE, courses: SAMPLE_COURSES, history: SAMPLE_HISTORY };
+      return { ...INITIAL_APP_STATE, theme: state.theme, lang: state.lang, profile: DEFAULT_PROFILE, courses: SAMPLE_COURSES, semesters: SAMPLE_SEMESTERS };
   }
 }
 

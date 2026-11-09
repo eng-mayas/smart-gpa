@@ -7,7 +7,7 @@ import { CumulativePage } from "./pages/CumulativePage";
 import { PredictorPage } from "./pages/PredictorPage";
 import { ExhaustionPage } from "./pages/ExhaustionPage";
 import { WarningsPage } from "./pages/WarningsPage";
-import { HistoryPage } from "./pages/HistoryPage";
+import { SemestersPage } from "./pages/SemestersPage";
 import { RegulationsPage } from "./pages/RegulationsPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { PlanPage } from "./pages/PlanPage";
@@ -18,16 +18,16 @@ import { Disclaimer } from "./components/common";
 import { exportBackup } from "../state/backup";
 
 const GROUPS: { titleAr: string; titleEn: string; ids: string[] }[] = [
-  { titleAr: "", titleEn: "", ids: ["dashboard"] },
+  { titleAr: "", titleEn: "", ids: ["dashboard", "semesters"] },
   { titleAr: "الحساب", titleEn: "Calculate", ids: ["semester", "cumulative", "progress"] },
   { titleAr: "التخطيط", titleEn: "Plan", ids: ["plan", "predictor", "exhaustion", "warnings"] },
-  { titleAr: "بياناتي", titleEn: "My data", ids: ["history", "import", "regulations", "settings"] },
+  { titleAr: "بياناتي", titleEn: "My data", ids: ["import", "regulations", "settings"] },
   { titleAr: "للجامعات", titleEn: "For universities", ids: ["advisor"] },
 ];
 
 const ROUTES: { id: string; key: Key; icon: string }[] = [
   { id: "dashboard", key: "nav_dashboard", icon: "▦" },
-  { id: "history", key: "nav_history", icon: "🗓" },
+  { id: "semesters", key: "nav_history", icon: "🗓" },
   { id: "plan", key: "nav_plan", icon: "🎓" },
   { id: "progress", key: "nav_progress", icon: "📈" },
   { id: "semester", key: "nav_semester", icon: "∑" },
@@ -66,7 +66,8 @@ export function App() {
       case "predictor": return <PredictorPage />;
       case "exhaustion": return <ExhaustionPage />;
       case "warnings": return <WarningsPage />;
-      case "history": return <HistoryPage />;
+      case "history":
+      case "semesters": return <SemestersPage go={go} />;
       case "regulations": return <RegulationsPage />;
       case "settings": return <SettingsPage />;
       case "plan": return <PlanPage go={go} />;
