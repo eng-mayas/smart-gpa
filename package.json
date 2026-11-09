@@ -8,6 +8,7 @@
     "dev": "node build.mjs --watch",
     "build": "node build.mjs",
     "test": "tsx --test tests/*.test.ts",
+    "e2e": "node scripts/e2e.mjs",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
