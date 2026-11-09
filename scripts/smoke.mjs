@@ -28,7 +28,7 @@ await page.route("**/fonts.googleapis.com/**", (r) => r.abort());
 await page.goto("http://localhost:4173/#settings"); await page.waitForTimeout(300);
 await page.getByText("تحميل بيانات تجريبية").click(); await page.waitForTimeout(200);
 
-const routes = ["dashboard", "semesters", "plan", "progress", "semester", "cumulative", "predictor", "exhaustion", "warnings", "import", "regulations", "advisor", "settings"];
+const routes = ["dashboard", "semesters", "plan", "mentor", "progress", "semester", "cumulative", "predictor", "exhaustion", "warnings", "import", "regulations", "advisor", "settings"];
 for (const r of routes) {
   await page.goto(`http://localhost:4173/#${r}`);
   await page.waitForTimeout(400);

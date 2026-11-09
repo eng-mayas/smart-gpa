@@ -11,6 +11,7 @@ const dict = {
   nav_warnings: { ar: "الإنذارات الأكاديمية", en: "Academic Warnings" },
   nav_history: { ar: "فصولي", en: "My Semesters" },
   nav_regulations: { ar: "الأنظمة الجامعية", en: "University Regulations" },
+  nav_mentor: { ar: "المستشار الأكاديمي", en: "Academic Mentor" },
   nav_plan: { ar: "الخطة الدراسية", en: "Study Plan" },
   nav_progress: { ar: "علاماتي خلال الفصل", en: "In-Semester Grades" },
   nav_import: { ar: "استيراد كشف العلامات", en: "Import Transcript" },

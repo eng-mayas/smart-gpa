@@ -6,11 +6,14 @@ import { describeState, nextThresholds, riskLevel, STATUS_COLORS } from "../../c
 import { requiredSemesterGpa } from "../../core/predictor";
 import { QuickStart } from "../components/QuickStart";
 import { backupDue, exportBackup } from "../../state/backup";
+import { InsightCard, useMentor } from "./MentorPage";
 
 export function DashboardPage({ go }: { go: (p: string) => void }) {
   const { state, dispatch, scale, policy, semester, cumulative, currentState, predicted, timeline, historyHours, derivedProfile, hasSemesters } = useAcademic();
   const p = derivedProfile;
   const isEmpty = p.previousGpaHours === 0 && state.semesters.length === 0 && state.courses.length === 0;
+  const { insights } = useMentor();
+  const topInsights = insights.filter((i) => i.severity !== "good" && i.section !== "data").slice(0, 3);
   const th = nextThresholds(currentState, policy, p.completedCredits);
   const reqSafe = requiredSemesterGpa({ previousCgpa: p.previousCgpa, previousGpaHours: p.previousGpaHours, semesterHours: semester.totalCredits, targetCgpa: th.safe });
   const creditsDone = p.completedCredits;
@@ -68,6 +71,12 @@ export function DashboardPage({ go }: { go: (p: string) => void }) {
                 <Stat label="مستوى الخطر" value={RISK_LABEL[riskLevel(currentState)]} sub={`${currentState.warnings} إنذار`} accent={COLOR_VAR[STATUS_COLORS[currentState.status]]} />
       </div>
 
+      {!isEmpty && topInsights.length > 0 && (
+        <div className="card mb" style={{ borderTop: "4px solid var(--gold)" }}>
+          <div className="card-head"><h2>🧭 المستشار يقول</h2><button className="btn sm" onClick={() => go("mentor")}>كل التوصيات ←</button></div>
+          <div className="stack">{topInsights.map((i) => <InsightCard key={i.id} i={i} go={go} compact />)}</div>
+        </div>
+      )}
       <div className="grid grid-3 mb">
         <div className="card" style={{ gridColumn: "span 2" }}>
           <div className="card-head"><h2>الوضع الأكاديمي</h2><RiskBadge state={currentState} /></div>

@@ -14,21 +14,25 @@ import { PlanPage } from "./pages/PlanPage";
 import { ProgressPage } from "./pages/ProgressPage";
 import { ImportPage } from "./pages/ImportPage";
 import { AdvisorPage } from "./pages/AdvisorPage";
+import { MentorPage } from "./pages/MentorPage";
 import { Disclaimer } from "./components/common";
 import { exportBackup } from "../state/backup";
 
-const GROUPS: { titleAr: string; titleEn: string; ids: string[] }[] = [
-  { titleAr: "", titleEn: "", ids: ["dashboard", "semesters"] },
-  { titleAr: "الحساب", titleEn: "Calculate", ids: ["semester", "cumulative", "progress"] },
-  { titleAr: "التخطيط", titleEn: "Plan", ids: ["plan", "predictor", "exhaustion", "warnings"] },
-  { titleAr: "بياناتي", titleEn: "My data", ids: ["import", "regulations", "settings"] },
+const PRIMARY = ["dashboard", "semesters", "plan", "mentor"];
+const MORE_GROUPS: { titleAr: string; titleEn: string; ids: string[] }[] = [
+  { titleAr: "أدوات الحساب", titleEn: "Calculators", ids: ["semester", "cumulative", "progress", "predictor"] },
+  { titleAr: "الإنذارات", titleEn: "Warnings", ids: ["exhaustion", "warnings", "regulations"] },
+  { titleAr: "بياناتي", titleEn: "My data", ids: ["import", "settings"] },
   { titleAr: "للجامعات", titleEn: "For universities", ids: ["advisor"] },
 ];
+const MORE_IDS = MORE_GROUPS.flatMap((g) => g.ids);
+const SHORT: Record<string, { ar: string; en: string }> = { dashboard: { ar: "الرئيسية", en: "Home" }, semesters: { ar: "فصولي", en: "Semesters" }, plan: { ar: "خطتي", en: "Plan" }, mentor: { ar: "المستشار", en: "Mentor" } };
 
 const ROUTES: { id: string; key: Key; icon: string }[] = [
   { id: "dashboard", key: "nav_dashboard", icon: "▦" },
   { id: "semesters", key: "nav_history", icon: "🗓" },
   { id: "plan", key: "nav_plan", icon: "🎓" },
+  { id: "mentor", key: "nav_mentor", icon: "🧭" },
   { id: "progress", key: "nav_progress", icon: "📈" },
   { id: "semester", key: "nav_semester", icon: "∑" },
   { id: "cumulative", key: "nav_cumulative", icon: "Σ" },
@@ -57,6 +61,8 @@ export function App() {
   const t = makeT(state.lang);
   const [route, go] = useHashRoute();
   const [open, setOpen] = useState(false);
+  const [more, setMore] = useState(() => MORE_IDS.includes(location.hash.replace(/^#\/?/, "")));
+  useEffect(() => { if (MORE_IDS.includes(route)) setMore(true); }, [route]);
   useEffect(() => { setOpen(false); window.scrollTo(0, 0); }, [route]);
 
   const page = (() => {
@@ -74,6 +80,7 @@ export function App() {
       case "progress": return <ProgressPage go={go} />;
       case "import": return <ImportPage go={go} />;
       case "advisor": return <AdvisorPage />;
+      case "mentor": return <MentorPage go={go} />;
       default: return <DashboardPage go={go} />;
     }
   })();
@@ -87,11 +94,19 @@ export function App() {
           <div><b>{t("appName")}</b><small>{t("brandSub")}</small></div>
         </div>
         <nav className="nav stack" style={{ gap: 2 }}>
-          {GROUPS.map((g) => (
-            <React.Fragment key={g.titleEn || "home"}>
-              {g.titleAr && <div className="nav-group">{state.lang === "ar" ? g.titleAr : g.titleEn}</div>}
+          {PRIMARY.map((id) => ROUTES.find((r) => r.id === id)!).map((r) => (
+            <a key={r.id} href={`#${r.id}`} className={route === r.id ? "active" : ""}>
+              <span className="ic">{r.icon}</span>{t(r.key)}
+            </a>
+          ))}
+          <button className="nav-more" onClick={() => setMore(!more)} aria-expanded={more}>
+            <span className="ic">{more ? "▾" : "▸"}</span>{state.lang === "ar" ? "المزيد" : "More"}
+          </button>
+          {more && MORE_GROUPS.map((g) => (
+            <React.Fragment key={g.titleEn}>
+              <div className="nav-group">{state.lang === "ar" ? g.titleAr : g.titleEn}</div>
               {g.ids.map((id) => ROUTES.find((r) => r.id === id)!).map((r) => (
-                <a key={r.id} href={`#${r.id}`} className={route === r.id ? "active" : ""}>
+                <a key={r.id} href={`#${r.id}`} className={`sub ${route === r.id ? "active" : ""}`}>
                   <span className="ic">{r.icon}</span>{t(r.key)}
                 </a>
               ))}
@@ -121,6 +136,16 @@ export function App() {
         </div>
         <Disclaimer text={t("disclaimer")} />
       </main>
+      <nav className="bottom-nav" aria-label="التنقل">
+        {PRIMARY.map((id) => ROUTES.find((r) => r.id === id)!).map((r) => (
+          <a key={r.id} href={`#${r.id}`} className={route === r.id ? "active" : ""}>
+            <span className="ic">{r.icon}</span><span>{SHORT[r.id]?.[state.lang] ?? t(r.key)}</span>
+          </a>
+        ))}
+        <button onClick={() => { setMore(true); setOpen(true); }} className={MORE_IDS.includes(route) ? "active" : ""}>
+          <span className="ic">☰</span><span>{state.lang === "ar" ? "المزيد" : "More"}</span>
+        </button>
+      </nav>
     </div>
   );
 }

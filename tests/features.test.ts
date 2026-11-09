@@ -5,7 +5,10 @@ import { summarizePlan, eligibleCourses, suggestRegistration, repeatStrategy, pr
 import { standing, neededForEachLetter, neededForMark, GradeComponent } from "../src/core/components";
 import { parseTranscriptText, normalizeDigits } from "../src/core/importer";
 import { parseStudentsCsv, assessCohort, SAMPLE_STUDENTS_CSV } from "../src/core/advisor";
-import { DRAFT_SY_PRIVATE_POLICY as P } from "../src/core/rules";
+import { DRAFT_SY_PRIVATE_POLICY as P, UNIFIED_SY_PRIVATE_POLICY as U, INITIAL_STATE } from "../src/core/rules";
+import { mentor } from "../src/core/mentor";
+import { DEFAULT_SCALE } from "../src/core/grading";
+import { calculateSemester, newCourse } from "../src/core/gpa";
 
 const close = (a: number | null, b: number, eps = 1e-9) => { assert.ok(a !== null); assert.ok(Math.abs(a - b) < eps, `${a} ≈ ${b}`); };
 
@@ -135,5 +138,33 @@ describe("advisor cohort", () => {
     const reem = a.find((x) => x.student.id === "2021007")!;
     assert.equal(reem.risk, "low");
     assert.equal(reem.nextIfUnchanged, "good");
+  });
+});
+
+describe("student mentor insights", () => {
+  const base = {
+    scale: DEFAULT_SCALE, policy: U, previousCgpa: 1.6, previousGpaHours: 45, completedCredits: 39, components: {}, plan: PLAN, semestersCount: 3, quickSemesters: 1, lastBackup: null,
+  };
+  test("empty data → single todo", () => {
+    const r = mentor({ ...base, state: INITIAL_STATE, previousCgpa: 0, previousGpaHours: 0, semester: calculateSemester([]), courses: [], progress: {}, plan: null });
+    assert.equal(r.insights.length, 1);
+    assert.equal(r.insights[0].severity, "todo");
+  });
+  test("warning student gets status, required GPA, next-semester suggestion and graduation paths", () => {
+    const courses = [newCourse({ id: "plan-601101", name: "تفاضل وتكامل (1)", credits: 3, grade: { kind: "mark", value: 48 } }), newCourse({ id: "plan-604101", name: "مهارات لغة إنكليزية (1)", credits: 3, grade: { kind: "mark", value: 68 } })];
+    const r = mentor({ ...base, state: { ...INITIAL_STATE, status: "warning_2", warnings: 2, semesterIndex: 3 }, semester: calculateSemester(courses), courses, progress: { "401101": { status: "done", letter: "D" } } });
+    const ids = r.insights.map((i) => i.id);
+    assert.ok(ids.includes("status"));
+    assert.ok(ids.some((i) => i.startsWith("fail-")), "failing course flagged");
+    assert.ok(ids.some((i) => i.startsWith("border-")), "68 is 2 marks from C+ → borderline");
+    assert.ok(ids.includes("next"), "next semester suggestion present");
+    assert.equal(r.paths.length, 3);
+    assert.ok(r.paths[0].semesters <= r.paths[2].semesters);
+    assert.equal(r.insights[0].severity === "critical" || r.insights[0].severity === "warning", true, "sorted by severity");
+    assert.equal(r.headline?.section, "status");
+  });
+  test("good standing student gets a green headline", () => {
+    const r = mentor({ ...base, previousCgpa: 3.1, state: { ...INITIAL_STATE, status: "good", semesterIndex: 3 }, semester: calculateSemester([]), courses: [], progress: {} });
+    assert.equal(r.headline?.severity, "good");
   });
 });
