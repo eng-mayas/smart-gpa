@@ -18,15 +18,15 @@ import { MentorPage } from "./pages/MentorPage";
 import { Disclaimer } from "./components/common";
 import { exportBackup } from "../state/backup";
 
-const PRIMARY = ["dashboard", "semesters", "plan", "mentor"];
+const PRIMARY = ["dashboard", "cumulative", "semesters", "plan", "mentor"];
 const MORE_GROUPS: { titleAr: string; titleEn: string; ids: string[] }[] = [
-  { titleAr: "أدوات الحساب", titleEn: "Calculators", ids: ["semester", "cumulative", "progress", "predictor"] },
+  { titleAr: "أدوات الحساب", titleEn: "Calculators", ids: ["semester", "progress", "predictor"] },
   { titleAr: "الإنذارات", titleEn: "Warnings", ids: ["exhaustion", "warnings", "regulations"] },
   { titleAr: "بياناتي", titleEn: "My data", ids: ["import", "settings"] },
   { titleAr: "للجامعات", titleEn: "For universities", ids: ["advisor"] },
 ];
 const MORE_IDS = MORE_GROUPS.flatMap((g) => g.ids);
-const SHORT: Record<string, { ar: string; en: string }> = { dashboard: { ar: "الرئيسية", en: "Home" }, semesters: { ar: "فصولي", en: "Semesters" }, plan: { ar: "خطتي", en: "Plan" }, mentor: { ar: "المستشار", en: "Mentor" } };
+const SHORT: Record<string, { ar: string; en: string }> = { dashboard: { ar: "الرئيسية", en: "Home" }, semesters: { ar: "فصولي", en: "Semesters" }, cumulative: { ar: "التراكمي", en: "GPA" }, plan: { ar: "خطتي", en: "Plan" }, mentor: { ar: "المستشار", en: "Mentor" } };
 
 const ROUTES: { id: string; key: Key; icon: string }[] = [
   { id: "dashboard", key: "nav_dashboard", icon: "▦" },
