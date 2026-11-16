@@ -6,13 +6,17 @@ import { join, extname } from "node:path";
 
 const root = new URL("../dist/", import.meta.url).pathname;
 const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".webmanifest": "application/manifest+json" };
-const server = createServer((req, res) => { let p = join(root, decodeURIComponent(req.url.split("?")[0])); if (p.endsWith("/")) p += "index.html"; if (!existsSync(p)) { res.statusCode = 404; return res.end(); } res.setHeader("content-type", types[extname(p)] ?? "application/octet-stream"); res.end(readFileSync(p)); });
+const server = createServer((req, res) => { let p = join(root, decodeURIComponent(req.url.split("?")[0])); if (p.endsWith("/")) p += "index.html"; if (!existsSync(p)) { res.statusCode = 404; return res.end(); } res.setHeader("content-type", types[extname(p)] ?? "application/octet-stream");
+  // apply the production security headers (public/_headers) so CSP violations surface here
+  const hdr = readFileSync(join(root, "_headers"), "utf8").split("\n").filter((l) => l.startsWith("  ") && l.includes(": ")).slice(0, 7);
+  for (const l of hdr) { const i = l.indexOf(": "); res.setHeader(l.slice(2, i), l.slice(i + 2)); }
+  res.end(readFileSync(p)); });
 await new Promise((r) => server.listen(4180, r));
 const B = "http://localhost:4180/";
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1360, height: 900 }, acceptDownloads: true });
 const page = await ctx.newPage();
-const errors = []; page.on("pageerror", (e) => errors.push("pageerror: " + e.message)); page.on("requestfailed", (r) => { if (!r.url().includes("fonts.g")) errors.push("requestfailed: " + r.url()); }); page.on("console", (m) => { if (m.type() === "error" && !m.text().includes("fonts.googleapis") && !m.text().includes("ERR_FAILED")) errors.push("console: " + m.text()); });
+const errors = []; page.on("pageerror", (e) => errors.push("pageerror: " + e.message)); page.on("requestfailed", (r) => { if (!r.url().includes("fonts.g")) errors.push("requestfailed: " + r.url()); }); page.on("console", (m) => { if (m.text().includes("Content Security Policy")) errors.push("CSP: " + m.text());  if (m.type() === "error" && !m.text().includes("fonts.googleapis") && !m.text().includes("ERR_FAILED")) errors.push("console: " + m.text()); });
 await page.route("**/fonts.googleapis.com/**", (r) => r.abort());
 const results = []; const check = (name, ok, info = "") => { results.push({ name, ok, info }); console.log(`${ok ? "✓" : "✗"} ${name}${info ? " — " + info : ""}`); };
 const text = async () => (await page.locator("main").textContent()) ?? "";

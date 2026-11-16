@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { useStore } from "../../state/store";
+import { useStore, sanitizeBackup, isValidEndpoint } from "../../state/store";
 import { Field, NumberInput } from "../components/common";
 import { exportBackup } from "../../state/backup";
 import { UNIVERSITIES, OTHER_UNIVERSITY } from "../../core/universities";
@@ -16,13 +16,10 @@ export function SettingsPage() {
   };
   const importJson = (f: File) => {
     f.text().then((t) => {
-      try {
-        const parsed = JSON.parse(t);
-        if (parsed && parsed.version === 1) dispatch({ type: "set", patch: parsed });
-        else alert("ملف غير صالح");
-      } catch {
-        alert("تعذّر قراءة الملف");
-      }
+      const patch = sanitizeBackup(t);
+      if (!patch) return alert("هذا ليس ملف نسخة احتياطية صالحاً من Smart GPA.");
+      dispatch({ type: "set", patch });
+      alert("تمت استعادة النسخة الاحتياطية.");
     });
   };
 
@@ -92,7 +89,7 @@ export function SettingsPage() {
           <div className="card">
             <h2>خدمة الاستخراج من الصور (اختياري)</h2>
             <p className="tiny">لقراءة صور كشوف العلامات بدقة عالية عبر الذكاء الاصطناعي، انشر الخدمة الموجودة في مجلد <span className="kbd">worker/</span> على Cloudflare Workers والصق رابطها هنا. بدونها يُستخدم OCR داخل المتصفح.</p>
-            <Field label="رابط الخدمة"><input className="input" dir="ltr" placeholder="https://smart-gpa-extract.<account>.workers.dev" value={state.extractionEndpoint} onChange={(e) => dispatch({ type: "set", patch: { extractionEndpoint: e.target.value.trim() } })} /></Field>
+            <Field label="رابط الخدمة (https فقط)" hint={state.extractionEndpoint && !isValidEndpoint(state.extractionEndpoint) ? "⚠ الرابط غير مقبول — يجب أن يبدأ بـ https://" : "تُرسل صورة الكشف إلى هذا الرابط فقط عند اختيارك ملفاً. لا تضع رابطاً لا تثق به."}><input className={`input ${state.extractionEndpoint && !isValidEndpoint(state.extractionEndpoint) ? "invalid" : ""}`} dir="ltr" placeholder="https://smart-gpa-extract.<account>.workers.dev" value={state.extractionEndpoint} onChange={(e) => dispatch({ type: "set", patch: { extractionEndpoint: e.target.value.trim() } })} /></Field>
           </div>
           <div className="card">
             <h2>البيانات</h2>

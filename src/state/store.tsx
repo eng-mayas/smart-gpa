@@ -235,6 +235,44 @@ function reduce(state: AppState, action: Action): AppState {
 
 const Ctx = createContext<{ state: AppState; dispatch: React.Dispatch<Action> } | null>(null);
 
+/** Allowed keys of a backup file. Anything else is dropped; the extraction endpoint is never taken from a file. */
+const BACKUP_KEYS: (keyof AppState)[] = ["theme", "lang", "scaleId", "policyId", "profile", "courses", "semesters", "savedScenarios", "planId", "customPlan", "planProgress", "planOverrides", "components", "advisorStudents", "demo", "onboarded", "lastBackup"];
+const MAX_BACKUP_BYTES = 5 * 1024 * 1024;
+
+/** Parse and sanitize a backup file. Returns null when it is not a Smart GPA backup. */
+export function sanitizeBackup(text: string): Partial<AppState> | null {
+  if (text.length > MAX_BACKUP_BYTES) return null;
+  let parsed: unknown;
+  try { parsed = JSON.parse(text); } catch { return null; }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed) || (parsed as { version?: unknown }).version !== 1) return null;
+  const src = parsed as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const k of BACKUP_KEYS) {
+    if (!(k in src)) continue;
+    const v = src[k];
+    const expectArray = ["courses", "semesters", "savedScenarios", "advisorStudents"].includes(k);
+    const expectObject = ["profile", "customPlan", "planProgress", "planOverrides", "components"].includes(k);
+    if (expectArray && !Array.isArray(v)) continue;
+    if (expectObject && (v === null ? k !== "customPlan" : typeof v !== "object" || Array.isArray(v))) continue;
+    if (k === "theme" && v !== "light" && v !== "dark") continue;
+    if (k === "lang" && v !== "ar" && v !== "en") continue;
+    if ((k === "scaleId" || k === "policyId" || k === "planId") && v !== null && typeof v !== "string") continue;
+    out[k] = v;
+  }
+  // Legacy backups carried GPA-only history
+  if (!out.semesters && Array.isArray(src.history)) {
+    out.semesters = (src.history as { label?: unknown; gpa?: unknown; gpaHours?: unknown }[]).map((h, i) => ({ id: `mig-${i}`, label: String(h.label ?? `فصل ${i + 1}`), kind: "quick", courses: [], gpa: typeof h.gpa === "number" ? h.gpa : null, gpaHours: typeof h.gpaHours === "number" ? h.gpaHours : 0, earnedCredits: typeof h.gpaHours === "number" ? h.gpaHours : 0 }));
+  }
+  if (out.profile) out.profile = { ...EMPTY_PROFILE, ...(out.profile as object) };
+  return out as Partial<AppState>;
+}
+
+/** Only https URLs (or localhost for development) are accepted as an extraction endpoint. */
+export function isValidEndpoint(url: string): boolean {
+  if (!url) return true;
+  try { const u = new URL(url); return u.protocol === "https:" || (u.protocol === "http:" && ["localhost", "127.0.0.1"].includes(u.hostname)); } catch { return false; }
+}
+
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, load);
   useEffect(() => {

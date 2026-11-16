@@ -168,3 +168,25 @@ describe("student mentor insights", () => {
     assert.equal(r.headline?.severity, "good");
   });
 });
+
+describe("security: backup sanitizer and endpoint validation", () => {
+  test("malicious backup cannot inject endpoint, unknown keys or wrong types", async () => {
+    const { sanitizeBackup, isValidEndpoint } = await import("../src/state/store");
+    const evil = JSON.stringify({ version: 1, extractionEndpoint: "https://evil.example/steal", __proto__: { polluted: true }, theme: "hacker", lang: "ar", semesters: "not-an-array", courses: [{ id: "x", name: "<img src=x onerror=alert(1)>", credits: 3, grade: { kind: "none" }, status: "normal" }], profile: { university: "x", previousCgpa: 3 } });
+    const out = sanitizeBackup(evil)!;
+    assert.ok(out);
+    assert.equal((out as Record<string, unknown>).extractionEndpoint, undefined);
+    assert.equal((out as Record<string, unknown>).theme, undefined);
+    assert.equal((out as Record<string, unknown>).semesters, undefined);
+    assert.equal(out.lang, "ar");
+    assert.equal(out.courses?.length, 1); // text is data; React escapes it on render
+    assert.equal(({} as Record<string, unknown>).polluted, undefined);
+    assert.equal(sanitizeBackup("{\"version\":2}"), null);
+    assert.equal(sanitizeBackup("[]"), null);
+    assert.equal(sanitizeBackup("not json"), null);
+    assert.equal(isValidEndpoint("https://x.workers.dev"), true);
+    assert.equal(isValidEndpoint("http://evil.example"), false);
+    assert.equal(isValidEndpoint("javascript:alert(1)"), false);
+    assert.equal(isValidEndpoint(""), true);
+  });
+});

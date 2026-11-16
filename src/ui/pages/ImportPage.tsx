@@ -3,6 +3,7 @@ import { useAcademic } from "../../state/useAcademic";
 import { Field } from "../components/common";
 import { ImportedRow, parseTranscriptText } from "../../core/importer";
 import { newCourse } from "../../core/gpa";
+import { isValidEndpoint } from "../../state/store";
 
 declare global {
   interface Window { Tesseract?: { recognize: (img: File | string, lang: string, opts?: Record<string, unknown>) => Promise<{ data: { text: string } }> } }
@@ -12,7 +13,9 @@ async function loadTesseract(): Promise<NonNullable<Window["Tesseract"]>> {
   if (window.Tesseract) return window.Tesseract;
   await new Promise<void>((resolve, reject) => {
     const s = document.createElement("script");
-    s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+    s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+    s.crossOrigin = "anonymous";
+    s.referrerPolicy = "no-referrer";
     s.onload = () => resolve();
     s.onerror = () => reject(new Error("تعذّر تحميل محرك OCR"));
     document.head.appendChild(s);
@@ -58,7 +61,8 @@ export function ImportPage({ go }: { go: (p: string) => void }) {
 
   const onFile = async (f: File) => {
     setError("");
-    if (state.extractionEndpoint.trim()) {
+    if (f.size > 10 * 1024 * 1024) { setError("الملف أكبر من 10 ميغابايت."); return; }
+    if (state.extractionEndpoint.trim() && isValidEndpoint(state.extractionEndpoint)) {
       setBusy("جارٍ الاستخراج بالذكاء الاصطناعي…");
       try {
         const res = await fetch(state.extractionEndpoint, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image: await fileToBase64(f), mime: f.type }) });
